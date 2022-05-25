@@ -12,8 +12,6 @@ let linkerSetting: [LinkerSetting] = [
     .unsafeFlags([
         "-Xlinker", "-rpath",
         "-Xlinker", "@executable_path/Frameworks",
-        // "/Applications/Xcode-13.4.0.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx"
-        // "/Applications/Xcode-13.4.0.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.5/macosx"
     ], .when(platforms: [.macOS]))
 ]
 let staticTarget: [Target] = [
@@ -29,10 +27,6 @@ let staticTarget: [Target] = [
         linkerSettings: [
             .unsafeFlags([
                 "-Xlinker", "-dead_strip_dylibs",
-                "-Xlinker", "-rpath",
-                "-Xlinker", "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx",
-                "-Xlinker", "-rpath",
-                "-Xlinker", "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.5/macosx",
             ], .when(platforms: [.macOS]))
         ]
     ),
@@ -64,7 +58,7 @@ let target: [Target] = isBuildStatic ? staticTarget : dynamicTarget
 let package = Package(
     name: "LeakDetect",
     platforms: [
-        .macOS(.v10_15)
+        .macOS(.v10_12)
     ],
     products: [
         .executable(name: "leakDetect", targets: ["LeakDetect"]),

@@ -44,23 +44,32 @@ extension File where Visitor: DetectVisitor {
 }
 
 extension Module {
-    func walk<Visitor: DetectVisitor>() async throws -> [File<Visitor>] {
-        return try await withThrowingTaskGroup(of: File<Visitor>.self) { group in
-            for filePath in self.sourceFiles {
-                group.addTask {
-                    let cursor: Cursor = try Cursor(path: filePath, arguments: self.compilerArguments)
-                    let visitor = Visitor()
-                    visitor.walk(cursor.sourceFile)
-                    return .init(filePath: filePath, cursor: cursor, visitor: visitor)
-                }
-            }
-
-            var result: [File<Visitor>] = []
-            for try await target in group {
-                result.append(target)
-            }
-
-            return result
+    func walk<Visitor: DetectVisitor>() throws -> [File<Visitor>] {
+        return try self.sourceFiles.map { filePath in
+            let cursor: Cursor = try Cursor(path: filePath, arguments: self.compilerArguments)
+            let visitor = Visitor()
+            visitor.walk(cursor.sourceFile)
+            return .init(filePath: filePath, cursor: cursor, visitor: visitor)
         }
     }
+    
+//    func walk<Visitor: DetectVisitor>() async throws -> [File<Visitor>] {
+//        return try await withThrowingTaskGroup(of: File<Visitor>.self) { group in
+//            for filePath in self.sourceFiles {
+//                group.addTask {
+//                    let cursor: Cursor = try Cursor(path: filePath, arguments: self.compilerArguments)
+//                    let visitor = Visitor()
+//                    visitor.walk(cursor.sourceFile)
+//                    return .init(filePath: filePath, cursor: cursor, visitor: visitor)
+//                }
+//            }
+//
+//            var result: [File<Visitor>] = []
+//            for try await target in group {
+//                result.append(target)
+//            }
+//
+//            return result
+//        }
+//    }
 }

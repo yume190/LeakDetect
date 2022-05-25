@@ -12,7 +12,8 @@ import LeakDetectKit
 import Cursor
 import Rainbow
 
-struct Command: AsyncParsableCommand {
+//AsyncParsableCommand
+struct Command: ParsableCommand {
     static var configuration: CommandConfiguration = CommandConfiguration(
         // commandName: "xcode",
         abstract: "A Tool to Detect Potential Leaks",
@@ -37,27 +38,40 @@ struct Command: AsyncParsableCommand {
    
     typealias LeakCount = Int
    
-    private func prepare() async -> (String, String, [String]) {
-        return await withCheckedContinuation { continuation in
-            Env.prepare { (projectRoot: String, moduleName: String, args: [String]) in
-                continuation.resume(returning: (projectRoot, moduleName, args))
+//    private func prepare() async -> (String, String, [String]) {
+//        return await withCheckedContinuation { continuation in
+//            Env.prepare { (projectRoot: String, moduleName: String, args: [String]) in
+//                continuation.resume(returning: (projectRoot, moduleName, args))
+//            }
+//        }
+//    }
+    
+    func run() throws {
+        try Env.prepare { (projectRoot: String, moduleName: String, args: [String]) in
+            let module: Module = Module(name: moduleName, compilerArguments: args)
+           
+            switch mode {
+            case .assign:
+                try assign(module)
+            case .capture:
+                try capture(module)
             }
         }
+        
     }
     
-    func run() async throws {
-//        projectRoot
-        let (_, moduleName, args) = await prepare()
-        let module: Module = Module(name: moduleName, compilerArguments: args)
-       
-        switch mode {
-        case .assign:
-            try await assign(module)
-            break
-        case .capture:
-            try await capture(module)
-        }
-    }
+//    func run() async throws {
+////        projectRoot
+//        let (_, moduleName, args) = await prepare()
+//        let module: Module = Module(name: moduleName, compilerArguments: args)
+//
+//        switch mode {
+//        case .assign:
+//            try await assign(module)
+//        case .capture:
+//            try await capture(module)
+//        }
+//    }
     
     private func summery(_ leakCount: LeakCount) {
         if leakCount == 0 {
@@ -69,11 +83,11 @@ struct Command: AsyncParsableCommand {
 }
 
 extension Command {
-    private func capture(_ module: Module) async throws {
+    private func capture(_ module: Module) throws {
         var leakCount: LeakCount = 0
         defer { summery(leakCount) }
         
-        let files: [File<DeclsVisitor>] = try await module.walk()
+        let files: [File<DeclsVisitor>] = try module.walk()
         
         let all: Int = module.sourceFiles.count
         for (index, file) in files.sorted().enumerated() {
@@ -84,11 +98,11 @@ extension Command {
 }
 
 extension Command {
-    private func assign(_ module: Module) async throws {
+    private func assign(_ module: Module) throws {
         var leakCount: LeakCount = 0
         defer { summery(leakCount) }
         
-        let files: [File<AssignClosureVisitor>] = try await module.walk()
+        let files: [File<AssignClosureVisitor>] = try module.walk()
         
         let all: Int = module.sourceFiles.count
         for (index, file) in files.sorted().enumerated() {
