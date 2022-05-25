@@ -8,7 +8,7 @@
 
 ``` bash
 brew install mint
-mint install yume190/leakDetect
+mint install yume190/LeakDetect
 ```
 
 ## 使用方式

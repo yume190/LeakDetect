@@ -8,7 +8,7 @@ A Tool to Detect Swift Potential Leaks
 
 ``` bash
 brew install mint
-mint install yume190/leakDetect
+mint install yume190/LeakDetect
 ```
 
 ## Usage
