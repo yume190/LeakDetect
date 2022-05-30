@@ -11,6 +11,15 @@
         }
       },
       {
+        "package": "HumanString",
+        "repositoryURL": "https://github.com/zonble/HumanString.git",
+        "state": {
+          "branch": null,
+          "revision": "5939265f3ba37e793ee654b0af38368b8c871a3c",
+          "version": "0.1.1"
+        }
+      },
+      {
         "package": "Rainbow",
         "repositoryURL": "https://github.com/onevcat/Rainbow",
         "state": {
@@ -60,8 +69,8 @@
         "repositoryURL": "https://github.com/yume190/TypeFill",
         "state": {
           "branch": null,
-          "revision": "461a6c412c09d37807236e8f5eadef5d8b094a6f",
-          "version": "0.3.4"
+          "revision": "c2bad12e8a1280f4a51005f37ac0bcce9ad33ffa",
+          "version": "0.4.1"
         }
       },
       {

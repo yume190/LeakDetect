@@ -8,27 +8,36 @@
 import Foundation
 import SwiftSyntax
 import Rainbow
-import Cursor
+import SKClient
 
 extension DeclsVisitor {
-    public func detect(_ cursor: Cursor, _ reporter: Reporter, _ isVerbose: Bool) throws -> Int {
+    public func detect(_ client: SKClient, _ reporter: Reporter, _ isVerbose: Bool) throws -> Int {
         let all = self.leakVisitors
         
         var count = 0
         
         for v in all where !v.ids.isEmpty {
-            let tokens = try v.detect(cursor)
+            let tokens = try v.detect(client)
                 .filter(\.1)
                 .map(\.0)
             guard !tokens.isEmpty else {continue}
             
             try tokens.forEach { token in
                 let start = v.start?.withoutTrivia().description ?? "{"
-                let loc = cursor(location: token)
-                let c = try cursor(token.positionAfterSkippingLeadingTrivia.utf8Offset)
+                
+                let function = v.function?.withoutTrivia().description ?? "nil"
+                let functionOffset = v.function?.positionAfterSkippingLeadingTrivia.utf8Offset ?? -1
+                let functionRes: SourceKitResponse? = functionOffset == -1 ? nil : try client(functionOffset)
+                
+                
+                let loc = client(location: token)
+                let c = try client(token.positionAfterSkippingLeadingTrivia.utf8Offset)
                 reporter.report(loc)
                 if isVerbose {
                     print("""
+                        \("function:".lightBlue) \(function) \(functionOffset)
+                        \("function usr demangle:".lightBlue) \(functionRes?.usr_demangle ?? "nil")
+                        \("function typeusr demangle:".lightBlue) \(functionRes?.typeusr_demangle ?? "nil")
                         \("block.start at `\(start)`:".lightBlue) \(v.start?.positionAfterSkippingLeadingTrivia.utf8Offset ?? -1)
                         \("key.offset:".lightBlue) \(c.offset ?? -1)
                         \("token.offset:".lightBlue) \(token.positionAfterSkippingLeadingTrivia.utf8Offset)
@@ -47,7 +56,7 @@ extension DeclsVisitor {
 }
 
 extension LeakVisitor {
-    public func detect(_ cursor: Cursor) throws -> [(IdentifierExprSyntax, Bool)] {
+    public func detect(_ client: SKClient) throws -> [(IdentifierExprSyntax, Bool)] {
         guard let start = self.start else { return [] }
         let startLoc = start.positionAfterSkippingLeadingTrivia.utf8Offset
         var dict: [String: Bool] = [:]
@@ -62,7 +71,7 @@ extension LeakVisitor {
         if let functionName = function?.tokenSyntax {
             switch closureType {
             case .trailing:
-                let _cur = try cursor(functionName)
+                let _cur = try client(functionName)
                 let def = _cur.annotated_decl_xml_value ?? ""
                 let code = _cur.typeusr_demangle ?? ""
                 let isEscape =
@@ -83,7 +92,7 @@ extension LeakVisitor {
             if let b = dict[id.identifier.text] {
                 result.append((id, b))
             } else {
-                let _cur = try cursor(id.positionAfterSkippingLeadingTrivia.utf8Offset)
+                let _cur = try client(id.positionAfterSkippingLeadingTrivia.utf8Offset)
                 
                 let b: Bool
                 switch _cur.kind {

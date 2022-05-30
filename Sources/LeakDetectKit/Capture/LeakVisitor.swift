@@ -9,7 +9,7 @@
 import Foundation
 import SwiftSyntax
 import Rainbow
-import Cursor
+import SKClient
 
 /// Find sub `function`/`closure`
 ///     pass id to ``IdentifierVisitor``
@@ -126,7 +126,6 @@ internal final class LeakVisitor: SyntaxVisitor {
     ///     //                ^
     /// }
     internal final override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-//        print(node.identifier.description)
         if let body = node.body {
             let visitor = LeakVisitor(isInDecl: false, start: node.identifier)
             visitor.walk(body)

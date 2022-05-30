@@ -9,7 +9,7 @@ import Foundation
 import ArgumentParser
 import SourceKittenFramework
 import LeakDetectKit
-import Cursor
+import SKClient
 import Rainbow
 
 //AsyncParsableCommand

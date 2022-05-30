@@ -8,7 +8,7 @@
 import Foundation
 import SwiftSyntax
 import Rainbow
-import Cursor
+import SKClient
 
 public final class AssignClosureVisitor: SyntaxVisitor {
     
@@ -62,16 +62,16 @@ public final class AssignClosureVisitor: SyntaxVisitor {
         }
     }
     
-    public final func detect(_ cursor: Cursor, _ reporter: Reporter, _ isVerbose: Bool) throws -> Int {
+    public final func detect(_ client: SKClient, _ reporter: Reporter, _ isVerbose: Bool) throws -> Int {
         
-        let locs = _detect(cursor)
+        let locs = _detect(client)
         
         for loc in locs {
             reporter.report(loc)
             if isVerbose {
-                let c = try cursor(loc.location.offset)
+                let info = try client(loc.location.offset)
                 print("""
-                    \("kind:".lightBlue) `\(c.kind?.rawValue ?? "")`
+                    \("kind:".lightBlue) `\(info.kind?.rawValue ?? "")`
                 """)
             }
         }
@@ -79,12 +79,12 @@ public final class AssignClosureVisitor: SyntaxVisitor {
         return locs.count
     }
     
-    public final func _detect(_ cursor: Cursor) -> [CodeLocation] {
+    public final func _detect(_ client: SKClient) -> [CodeLocation] {
         return results.compactMap { result in
-            guard let isRIF = try? cursor(result).isRefInstanceFunction, isRIF else {
+            guard let isRIF = try? client(result).isRefInstanceFunction, isRIF else {
                 return nil
             }
-            return cursor(location: result)
+            return client(location: result)
         }
     }
 }

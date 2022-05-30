@@ -7,7 +7,7 @@
 
 import Foundation
 import XCTest
-@testable import Cursor
+@testable import SKClient
 @testable import LeakDetectKit
 
 typealias Complete = () -> Void

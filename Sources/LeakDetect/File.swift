@@ -5,7 +5,7 @@
 //  Created by Yume on 2022/5/24.
 //
 
-import Cursor
+import SKClient
 import Foundation
 import LeakDetectKit
 import SourceKittenFramework
@@ -13,7 +13,7 @@ import SwiftSyntax
 
 protocol DetectVisitor: AnyObject {
     init()
-    func detect(_ cursor: Cursor, _ reporter: Reporter, _ isVerbose: Bool) throws -> Int
+    func detect(_ client: SKClient, _ reporter: Reporter, _ isVerbose: Bool) throws -> Int
     func walk<SyntaxType: SyntaxProtocol>(_ node: SyntaxType)
 }
 
@@ -22,7 +22,7 @@ extension DeclsVisitor: DetectVisitor {}
 
 struct File<Visitor>: Comparable {
     let filePath: String
-    let cursor: Cursor
+    let client: SKClient
     let visitor: Visitor
 
     static func < (lhs: File<Visitor>, rhs: File<Visitor>) -> Bool {
@@ -36,9 +36,9 @@ struct File<Visitor>: Comparable {
 
 extension File where Visitor: DetectVisitor {
     func detect(_ reporter: Reporter, _ isVerbose: Bool) throws -> Int {
-        try self.cursor.editorOpen()
-        let count = try self.visitor.detect(self.cursor, reporter, isVerbose)
-        try self.cursor.editorClose()
+        try self.client.editorOpen()
+        let count = try self.visitor.detect(self.client, reporter, isVerbose)
+        try self.client.editorClose()
         return count
     }
 }
@@ -46,10 +46,10 @@ extension File where Visitor: DetectVisitor {
 extension Module {
     func walk<Visitor: DetectVisitor>() throws -> [File<Visitor>] {
         return try self.sourceFiles.map { filePath in
-            let cursor: Cursor = try Cursor(path: filePath, arguments: self.compilerArguments)
+            let client = try SKClient(path: filePath, arguments: self.compilerArguments)
             let visitor = Visitor()
-            visitor.walk(cursor.sourceFile)
-            return .init(filePath: filePath, cursor: cursor, visitor: visitor)
+            visitor.walk(client.sourceFile)
+            return .init(filePath: filePath, client: client, visitor: visitor)
         }
     }
     
@@ -57,10 +57,10 @@ extension Module {
 //        return try await withThrowingTaskGroup(of: File<Visitor>.self) { group in
 //            for filePath in self.sourceFiles {
 //                group.addTask {
-//                    let cursor: Cursor = try Cursor(path: filePath, arguments: self.compilerArguments)
+//                    let client: client = try client(path: filePath, arguments: self.compilerArguments)
 //                    let visitor = Visitor()
-//                    visitor.walk(cursor.sourceFile)
-//                    return .init(filePath: filePath, cursor: cursor, visitor: visitor)
+//                    visitor.walk(client.sourceFile)
+//                    return .init(filePath: filePath, client: client, visitor: visitor)
 //                }
 //            }
 //

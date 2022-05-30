@@ -20,7 +20,7 @@ let staticTarget: [Target] = [
         dependencies: [
             .product(name: "ArgumentParser", package: "swift-argument-parser"),
             .product(name: "SourceKittenFramework", package: "SourceKitten"),
-            .product(name: "Cursor", package: "TypeFill"),
+            .product(name: "SKClient", package: "TypeFill"),
             "LeakDetectKit",
             "lib_InternalSwiftSyntaxParser",
         ],
@@ -47,7 +47,7 @@ let dynamicTarget: [Target] = [
         dependencies: [
            .product(name: "ArgumentParser", package: "swift-argument-parser"),
            .product(name: "SourceKittenFramework", package: "SourceKitten"),
-           .product(name: "Cursor", package: "TypeFill"),
+           .product(name: "SKClient", package: "TypeFill"),
             "LeakDetectKit",
         ],
         linkerSettings: isXCode ? linkerSetting : []
@@ -74,12 +74,14 @@ let package = Package(
         .package(
             name: "TypeFill",
             url: "https://github.com/yume190/TypeFill",
-            from: "0.3.4"
+            from: "0.4.1"
         ),
         
         .package(url: "https://github.com/jpsim/SourceKitten", from: "0.32.0"),
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.0"),
         .package(url: "https://github.com/onevcat/Rainbow", from: "4.0.1"),
+        .package(url: "https://github.com/zonble/HumanString.git", from: "0.1.1"),
+
     ],
     targets: [
         // MARK: Frameworks
@@ -90,7 +92,7 @@ let package = Package(
                 .product(name: "SwiftSyntax", package: "SwiftSyntax"),
                 .product(name: "SwiftSyntaxParser", package: "SwiftSyntax"),
 
-                .product(name: "Cursor", package: "TypeFill"),
+                .product(name: "SKClient", package: "TypeFill"),
             ]
         ),
         
@@ -99,8 +101,9 @@ let package = Package(
             name: "LeakDetectTests",
             dependencies: [
                 .product(name: "SwiftSyntax", package: "SwiftSyntax"),
-                .product(name: "Cursor", package: "TypeFill"),
+                .product(name: "SKClient", package: "TypeFill"),
                 "LeakDetectKit",
+                "HumanString",
             ],
             resources: [
                 .copy("Resource")

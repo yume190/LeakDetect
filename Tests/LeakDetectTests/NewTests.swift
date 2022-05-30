@@ -7,17 +7,17 @@
 
 import Foundation
 import XCTest
-@testable import Cursor
+@testable import SKClient
 @testable import LeakDetectKit
 
 final class NewTests: XCTestCase {
     
     private lazy var path: String = resource(file: "Cursor.swift.data")
-    private lazy var cursor = try! Cursor(path: path)
+    private lazy var cursor = try! SKClient(path: path)
 
     func testNormal() throws {
-        let cursor = try Cursor(path: path)
-//        _ = try startDetect(cursor, Reporter.xcode)
+        let client = try SKClient(path: path)
+//        _ = try startDetect(client, Reporter.xcode)
 //        let visitor = LeakVisitor()
 //        visitor.walk(cursor.sourceFile)
 //
