@@ -46,3 +46,14 @@ see [Don't use this syntax!](https://www.youtube.com/watch?v=mzsz_Tit1HA).
 
 Detect instance captured by blocks(closure/function).
 
+## Example
+
+```sh
+git clone https://github.com/antranapp/LeakDetector
+cd LeakDetector
+# Must build once or use XCode to build
+xcodebuild -workspace LeakDetectorDemo.xcworkspace -scheme LeakDetectorDemo -sdk iphonesimulator IPHONEOS_DEPLOYMENT_TARGET=13.0 build
+export PROJECT_PATH=LeakDetectorDemo.xcworkspace
+export TARGET_NAME=LeakDetectorDemo
+leakDetect --mode capture
+```
