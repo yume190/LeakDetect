@@ -68,7 +68,7 @@ let package = Package(
         .package(
             name: "SwiftSyntax",
             url: "https://github.com/apple/swift-syntax.git",
-            .exact("0.50600.1")
+            revision: "0.50600.1"
         ),
         
         .package(

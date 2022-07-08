@@ -16,6 +16,8 @@ extension ExprSyntax {
             return self.as(MemberAccessExprSyntax.self)?.base?.firstBase
         case _ where self.is(IdentifierExprSyntax.self):
             return self.as(IdentifierExprSyntax.self)
+        case _ where self.is(OptionalChainingExprSyntax.self):
+            return self.as(OptionalChainingExprSyntax.self)?.expression.firstBase
         default:
             return nil
         }

@@ -24,6 +24,14 @@ final class IdentifierVisitor: SyntaxVisitor {
         return .skipChildren
     }
     
+    final override func visit(_ node: OptionalChainingExprSyntax) -> SyntaxVisitorContinueKind {
+        if let base = node.expression.firstBase {
+            ids.append(base)
+        }
+        
+        return .skipChildren
+    }
+    
     final override func visit(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
         if let base = node.base?.firstBase {
             ids.append(base)

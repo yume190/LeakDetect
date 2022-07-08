@@ -62,18 +62,9 @@ internal final class LeakVisitor: SyntaxVisitor {
         return .skipChildren
     }
     
-    /// class A {
-    ///     lazy var a: Int = {
-    ///         print(self)
-    ///         //    ^
-    ///         return 1
-    ///     }()
-    ///     var b: Int {
-    ///         print(self)
-    ///         //    ^
-    ///         return 1
-    ///     }
-    /// }
+    /// var a: Int = {1}()
+    /// var b: Int {1}
+    /// let c = 1
     internal final override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
         let list = node.bindings
         
@@ -84,15 +75,15 @@ internal final class LeakVisitor: SyntaxVisitor {
 
         if let bind = list.first, list.count == 1 {
             /// class A {
-            ///     lazy var a: Int = {
-            ///         print(self)
-            ///         //    ^
-            ///         return 1
+            ///     lazy var a: A = {
+            ///         //   ^
+            ///         //    \
+            ///         return self
             ///     }()
             /// }
             if let f = bind.initializer?.value.as(FunctionCallExprSyntax.self) {
                 let start = bind.pattern.as(IdentifierPatternSyntax.self)
-                
+
                 if let closure = f.calledExpression.as(ClosureExprSyntax.self) {
                     let visitor = LeakVisitor(isInDecl: false, start: start)
                     visitor.walk(closure.statements)
@@ -103,10 +94,10 @@ internal final class LeakVisitor: SyntaxVisitor {
             }
 
             /// class A {
-            ///     var b: Int {
-            ///         print(self)
-            ///         //    ^
-            ///         return 1
+            ///     var b: A {
+            ///         // ^
+            ///         //   \
+            ///         return self
             ///     }
             /// }
             if let f = bind.accessor {
@@ -164,6 +155,41 @@ internal final class LeakVisitor: SyntaxVisitor {
         return .skipChildren
     }
     
+    /// a = b
+    internal final override func visit(_ node: ExprListSyntax) -> SyntaxVisitorContinueKind {
+        if node.count == 3 {
+            let exprs: [ExprListSyntax.Element] = node.map {$0}
+            /// a = ?
+            if let _ = exprs[0].firstBase, exprs[1].is(AssignmentExprSyntax.self) {
+                /// a = b.c
+                ///     capture `b`
+                if exprs[2].is(MemberAccessExprSyntax.self) {
+                    self._idVisitor.walk(exprs[0])
+                    self._idVisitor.walk(exprs[2])
+                    return .skipChildren
+                }
+                
+                /// a = b()
+                ///     walk `b()`
+                /// a = {}
+                ///     walk `{}`
+                if exprs[2].is(FunctionCallExprSyntax.self) || exprs[2].is(ClosureExprSyntax.self) {
+                    self._idVisitor.walk(exprs[0])
+                    self.walk(exprs[2])
+                    return.skipChildren
+                }
+            }
+        }
+        
+        node.forEach { sub in
+            self._idVisitor.walk(sub)
+        }
+        return .skipChildren
+    }
+    
+    /// a()
+    /// a.b.c()
+    /// closure()
     internal final override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         self._idVisitor.walk(node.calledExpression)
         self._idVisitor.walk(node.argumentList)

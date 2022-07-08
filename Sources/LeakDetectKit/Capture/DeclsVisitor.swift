@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  DeclsVisitor.swift
 //  
 //
 //  Created by Yume on 2022/5/23.
@@ -8,6 +8,10 @@
 import Foundation
 import SwiftSyntax
 
+/// only visit:
+///     `class`, `struct`, `enum`, `extension`
+///
+/// Source Code use ``customWalk`` to walk `static func` and ...
 public final class DeclsVisitor: SyntaxVisitor {
     private lazy var _subVisitors: [DeclsVisitor] = []
     private let leak: LeakVisitor = .init(isInDecl: true)

@@ -11,7 +11,8 @@ test: build
 
 .PHONY: release
 release: 
-	@swift build -c release
+	@swift build -c release 
+# @swift build -c release --arch arm64 --arch x86_64
 
 .PHONY: install
 install: release

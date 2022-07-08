@@ -18,13 +18,20 @@ struct Command: ParsableCommand {
         // commandName: "xcode",
         abstract: "A Tool to Detect Potential Leaks",
         discussion: """
-        \(Env.discussion)
+        Example:
+        git clone https://github.com/antranapp/LeakDetector
+        cd LeakDetector
+        # Must build once
+        xcodebuild -workspace LeakDetectorDemo.xcworkspace -scheme LeakDetectorDemo -sdk iphonesimulator IPHONEOS_DEPLOYMENT_TARGET=13.0 build
+        export PROJECT_PATH=LeakDetectorDemo.xcworkspace
+        export TARGET_NAME=LeakDetectorDemo
+        leakDetect --mode capture
 
         Mode:
         * assign: detecting assign instance function `x = self.func` or `y(self.func)`.
         * capture: detecting capture instance in closure.
         """,
-        version: "0.0.1"
+        version: "0.0.3"
     )
    
     @Flag(name: [.customLong("verbose", withSingleDash: false), .short], help: "print inpect time")
@@ -33,7 +40,7 @@ struct Command: ParsableCommand {
     @Option(name: [.customLong("mode", withSingleDash: false)], help: "[\(Mode.all)]")
     var mode: Mode = .assign
    
-    @Option(name: [.customLong("reporter", withSingleDash: false)], help: "[\(Mode.all)]")
+    @Option(name: [.customLong("reporter", withSingleDash: false)], help: "[\(Reporter.all)]")
     var reporter: Reporter = .vscode
    
     typealias LeakCount = Int

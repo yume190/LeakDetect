@@ -17,7 +17,7 @@ extension DeclsVisitor {
         var count = 0
         
         for v in all where !v.ids.isEmpty {
-            let tokens = try v.detect(client)
+            let tokens = try v.detect(client, isVerbose)
                 .filter(\.1)
                 .map(\.0)
             guard !tokens.isEmpty else {continue}
@@ -56,14 +56,14 @@ extension DeclsVisitor {
 }
 
 extension LeakVisitor {
-    public func detect(_ client: SKClient) throws -> [(IdentifierExprSyntax, Bool)] {
+    public func detect(_ client: SKClient, _ isVerbose: Bool) throws -> [(IdentifierExprSyntax, Bool)] {
         guard let start = self.start else { return [] }
         let startLoc = start.positionAfterSkippingLeadingTrivia.utf8Offset
         var dict: [String: Bool] = [:]
         
         if let f = function?.withoutTrivia().description {
             if skipFunctionName.contains(f) {
-    //                print("SKIP", f.description)
+                if isVerbose { print("SKIP Function: ", f.description) }
                 return []
             }
         }
@@ -72,13 +72,24 @@ extension LeakVisitor {
             switch closureType {
             case .trailing:
                 let _cur = try client(functionName)
+                
+                /// all objc callback is escape function?
+                if let lang = _cur.raw["key.decl_lang"] as? String, lang == "source.lang.objc" {
+                    break
+                }
+                
+                /// SKIP: SourceKit cursor fail
+                if let diagnostic = _cur.raw["key.internal_diagnostic"] as? String, !diagnostic.isEmpty {
+                    break
+                }
+                
                 let def = _cur.annotated_decl_xml_value ?? ""
                 let code = _cur.typeusr_demangle ?? ""
                 let isEscape =
                     EscapingDetector.detectLast(code: code) ||
                     EscapingDetector.detectLast(code: def)
                 if !isEscape {
-    //                    print("SKIP NONESCAPING", functionName.withoutTrivia().description,  functionName.positionAfterSkippingLeadingTrivia.utf8Offset, isEscape)
+                    if isVerbose { print("SKIP Non Escape: ", functionName.withoutTrivia().description) }
                     return []
                 }
             default:

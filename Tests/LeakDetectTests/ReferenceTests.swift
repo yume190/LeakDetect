@@ -11,19 +11,6 @@ import HumanString
 @testable import SKClient
 import XCTest
 
-@inline(__always)
-private func prepare(code: String, action: (SKClient) throws -> ()) throws {
-    let client = try SKClient(code: code)
-    try prepare(client: client, action: action)
-}
-
-@inline(__always)
-private func prepare(client: SKClient, action: (SKClient) throws -> ()) throws {
-    _ = try client.editorOpen()
-    try action(client)
-    _ = try client.editorClose()
-}
-
 final class ReferenceTests: XCTestCase {
     final func testSelf() throws {
         let code = """

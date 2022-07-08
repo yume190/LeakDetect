@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SKClient
 
 private let sourceFile: URL = URL(fileURLWithPath: #file)
     .deletingLastPathComponent()
@@ -13,4 +14,18 @@ private let sourceFile: URL = URL(fileURLWithPath: #file)
 
 func resource(file: String) -> String {
     return sourceFile.appendingPathComponent(file).path
+}
+
+
+@inline(__always)
+func prepare(code: String, action: (SKClient) throws -> ()) throws {
+    let client = try SKClient(code: code)
+    try prepare(client: client, action: action)
+}
+
+@inline(__always)
+func prepare(client: SKClient, action: (SKClient) throws -> ()) throws {
+    _ = try client.editorOpen()
+    try action(client)
+    _ = try client.editorClose()
 }
