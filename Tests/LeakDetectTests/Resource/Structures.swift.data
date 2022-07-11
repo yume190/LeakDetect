@@ -1,0 +1,28 @@
+//
+//  Structures.swift
+//  
+//
+//  Created by Yume on 2022/7/8.
+//
+
+import Foundation
+
+class A {
+    var a = 1
+    var b = "2"
+}
+
+struct B {
+    var a = 1
+    var b = "2"
+}
+
+enum C {
+    var a: Int {1}
+    var b: String {"2"}
+}
+
+protocol D {
+    var a: Int {get}
+    var b: String {get}
+}
