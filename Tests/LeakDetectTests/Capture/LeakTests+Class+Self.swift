@@ -16,6 +16,7 @@ extension Class_Self_LeakTests {
     final func testNoLeak() throws {
         let code = """
         class AA {
+            var a = 1
             func leak() {
                 nonescape {
                     print(self.a)
@@ -30,6 +31,7 @@ extension Class_Self_LeakTests {
     final func testLeak() throws {
         let code = """
         class AA {
+            var a = 1
             func leak() {
                 escape {
                     print(self.a)
@@ -47,6 +49,7 @@ extension Class_Self_LeakTests {
     final func testNested1() throws {
         let code = """
         class AA {
+            var a = 1
             func leak() {
                 escape {
                     print(self.a)
@@ -65,6 +68,7 @@ extension Class_Self_LeakTests {
     final func testNested2() throws {
         let code = """
         class AA {
+            var a = 1
             func leak() {
                 nonescape {
                     print(self.a)
@@ -83,6 +87,7 @@ extension Class_Self_LeakTests {
     final func testNested3() throws {
         let code = """
         class AA {
+            var a = 1
             func leak() {
                 escape {
                     print(self.a)
@@ -100,6 +105,7 @@ extension Class_Self_LeakTests {
     final func testNested4() throws {
         let code = """
         class AA {
+            var a = 1
             func leak() {
                 escape {
                     print(self.a)
@@ -118,6 +124,7 @@ extension Class_Self_LeakTests {
     final func testNestedSpecial() throws {
         let code = """
         class AA {
+            var a = 1
             func leak() {
                 escape {
                     escape { [weak self] in
@@ -136,6 +143,7 @@ extension Class_Self_LeakTests {
     final func testAssign1() throws {
         let code = """
         class AA {
+            var a = 1
             func leak() {
                 escape {
                     self.a = 1
@@ -150,6 +158,7 @@ extension Class_Self_LeakTests {
     final func testAssign2() throws {
         let code = """
         class AA {
+            var a = 1
             func leak() {
                 escape {
                     let a = self.a
