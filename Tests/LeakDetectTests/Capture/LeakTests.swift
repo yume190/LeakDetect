@@ -24,7 +24,7 @@ class _LeakTests: XCTestCase {
         let client = try SKClient(code: code, arguments: SDK.macosx.pathArgs + Self._load)
         
         let visitor = DeclsVisitor()
-        visitor.walk(client.sourceFile)
+        visitor.customWalk(client.sourceFile)
         
         try client.editorOpen()
         let count = try visitor.detect(client, .vscode, false)
