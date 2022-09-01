@@ -4,7 +4,7 @@
 import PackageDescription
 
 #warning("todo isBuildStatic & isXCode")
-//ProcessInfo.processInfo.environment[""] != nil
+// ProcessInfo.processInfo.environment[""] != nil
 let isBuildStatic = true
 let isXCode = true
 let linkerSetting: [LinkerSetting] = [
@@ -12,7 +12,7 @@ let linkerSetting: [LinkerSetting] = [
     .unsafeFlags([
         "-Xlinker", "-rpath",
         "-Xlinker", "@executable_path/Frameworks",
-    ], .when(platforms: [.macOS]))
+    ], .when(platforms: [.macOS])),
 ]
 let staticTarget: [Target] = [
     .executableTarget(
@@ -22,15 +22,18 @@ let staticTarget: [Target] = [
             .product(name: "SourceKittenFramework", package: "SourceKitten"),
             .product(name: "SKClient", package: "TypeFill"),
             "LeakDetectKit",
+            "PathKit",
             "lib_InternalSwiftSyntaxParser",
         ],
         linkerSettings: [
             .unsafeFlags([
                 "-Xlinker", "-dead_strip_dylibs",
-            ], .when(platforms: [.macOS]))
+            ], .when(platforms: [.macOS])),
         ]
     ),
+
     // MARK: Swift Syntax
+
     // from https://github.com/krzysztofzablocki/Sourcery/blob/master/Package.swift
     // Pass `-dead_strip_dylibs` to ignore the dynamic version of `lib_InternalSwiftSyntaxParser`
     // that ships with SwiftSyntax because we want the static version from
@@ -45,10 +48,11 @@ let dynamicTarget: [Target] = [
     .executableTarget(
         name: "LeakDetect",
         dependencies: [
-           .product(name: "ArgumentParser", package: "swift-argument-parser"),
-           .product(name: "SourceKittenFramework", package: "SourceKitten"),
-           .product(name: "SKClient", package: "TypeFill"),
+            .product(name: "ArgumentParser", package: "swift-argument-parser"),
+            .product(name: "SourceKittenFramework", package: "SourceKitten"),
+            .product(name: "SKClient", package: "TypeFill"),
             "LeakDetectKit",
+            "PathKit",
         ],
         linkerSettings: isXCode ? linkerSetting : []
     ),
@@ -58,7 +62,7 @@ let target: [Target] = isBuildStatic ? staticTarget : dynamicTarget
 let package = Package(
     name: "LeakDetect",
     platforms: [
-        .macOS(.v10_12)
+        .macOS(.v12),
     ],
     products: [
         .executable(name: "leakDetect", targets: ["LeakDetect"]),
@@ -70,21 +74,22 @@ let package = Package(
             url: "https://github.com/apple/swift-syntax.git",
             revision: "0.50600.1"
         ),
-        
+
         .package(
             name: "TypeFill",
             url: "https://github.com/yume190/TypeFill",
-            from: "0.4.1"
+            from: "0.4.3"
         ),
-        
-        .package(url: "https://github.com/jpsim/SourceKitten", from: "0.32.0"),
+
+        .package(url: "https://github.com/jpsim/SourceKitten", from: "0.33.0"),
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.1.0"),
         .package(url: "https://github.com/onevcat/Rainbow", from: "4.0.1"),
         .package(url: "https://github.com/zonble/HumanString.git", from: "0.1.1"),
-
+        .package(url: "https://github.com/kylef/PathKit", from: "1.0.1"),
     ],
     targets: [
         // MARK: Frameworks
+
         .target(
             name: "LeakDetectKit",
             dependencies: [
@@ -95,8 +100,9 @@ let package = Package(
                 .product(name: "SKClient", package: "TypeFill"),
             ]
         ),
-        
+
         // MARK: Tests
+
         .testTarget(
             name: "LeakDetectTests",
             dependencies: [
@@ -106,7 +112,7 @@ let package = Package(
                 "HumanString",
             ],
             resources: [
-                .copy("Resource")
+                .copy("Resource"),
             ]
         ),
     ] + target
