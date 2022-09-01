@@ -107,9 +107,9 @@ extension Class_Obj_StaticFunction_LeakTests {
         extension A {
             static func leak() {
                 let a = A()
-                escape {
+                nonescape {
                     print(a.a)
-                    nonescape {
+                    escape {
                         print(a.a)
                     }
                 }

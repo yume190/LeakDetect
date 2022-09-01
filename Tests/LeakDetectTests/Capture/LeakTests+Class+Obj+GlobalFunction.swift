@@ -1,4 +1,3 @@
-#warning("todo")
 ////
 ////  Class_Obj_GlobalFunction_LeakTests.swift
 ////
@@ -11,6 +10,7 @@
 //
 //final class Class_Obj_GlobalFunction_LeakTests: _LeakTests {}
 //
+//#warning("todo implement scan global function")
 //// MARK: - class -
 //// MARK: Single self
 //extension Class_Obj_GlobalFunction_LeakTests {
@@ -97,9 +97,9 @@
 //        let code = """
 //        func leak() {
 //            let a = A()
-//            escape {
+//            nonescape {
 //                print(a.a)
-//                nonescape {
+//                escape {
 //                    print(a.a)
 //                }
 //            }

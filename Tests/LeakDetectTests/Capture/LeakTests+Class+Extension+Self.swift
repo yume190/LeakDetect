@@ -101,9 +101,9 @@ extension ClassEx_Self_LeakTests {
         let code = """
         extension A {
             func leak() {
-                escape {
+                nonescape {
                     print(self.a)
-                    nonescape {
+                    escape {
                         print(self.a)
                     }
                 }
@@ -128,6 +128,46 @@ extension ClassEx_Self_LeakTests {
         """
         
         try XCTAssertEqual(Self.count(code), 0)
+    }
+    
+    func testConceptNestedSpecial_noleak() {
+        var a: A? = A()
+        weak var b: A? = a
+        
+        a?.noleak()
+        a?.cb?()
+        a = nil
+        b?.cb?()
+        XCTAssertNil(b)
+    }
+    
+    func testConceptNestedSpecial_leak() {
+        var a: A? = A()
+        weak var b: A? = a
+        
+        a?.leak()
+        a?.cb?()
+        a = nil
+        b?.cb?()
+        XCTAssertNotNil(b)
+    }
+    
+    private class A {
+        var cb: (() -> ())? = nil
+        
+        func leak() {
+            self.cb = {
+                let b = { [weak self] in
+                }
+            }
+        }
+        
+        func noleak() {
+            self.cb = { [weak self] in
+                let b = { [weak self] in
+                }
+            }
+        }
     }
 }
 

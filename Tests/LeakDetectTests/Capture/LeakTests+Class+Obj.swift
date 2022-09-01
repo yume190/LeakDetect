@@ -113,9 +113,9 @@ extension Class_Obj_LeakTests {
             var a = 1
             func leak() {
                 let aa = AA()
-                escape {
+                nonescape {
                     print(aa.a)
-                    nonescape {
+                    escape {
                         print(aa.a)
                     }
                 }

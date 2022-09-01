@@ -107,9 +107,9 @@ extension Class_Self_LeakTests {
         class AA {
             var a = 1
             func leak() {
-                escape {
+                nonescape {
                     print(self.a)
-                    nonescape {
+                    escape {
                         print(self.a)
                     }
                 }

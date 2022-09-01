@@ -107,9 +107,9 @@ extension ClassEx_Obj_LeakTests {
         extension A {
             func leak() {
                 let a = A()
-                escape {
+                nonescape {
                     print(a.a)
-                    nonescape {
+                    escape {
                         print(a.a)
                     }
                 }
