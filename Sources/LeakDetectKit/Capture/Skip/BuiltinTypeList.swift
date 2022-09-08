@@ -32,6 +32,7 @@ let builtinTypeList = [
     "Swift.String",
     "Swift.Double",
     "Swift.Float",
+    "Swift.Bool",
     
     "Swift.Error",
     
