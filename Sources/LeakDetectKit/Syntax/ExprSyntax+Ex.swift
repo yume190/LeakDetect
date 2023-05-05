@@ -44,6 +44,12 @@ extension IdentifierExprSyntax {
     }
 }
 
+extension SyntaxProtocol {
+    var offset: Int {
+        positionAfterSkippingLeadingTrivia.utf8Offset
+    }
+}
+
 //public struct ArrayExprSyntax : SwiftSyntax.ExprSyntaxProtocol, SwiftSyntax.SyntaxHashable {
 //public struct ArrowExprSyntax : SwiftSyntax.ExprSyntaxProtocol, SwiftSyntax.SyntaxHashable {
 //public struct AsExprSyntax : SwiftSyntax.ExprSyntaxProtocol, SwiftSyntax.SyntaxHashable {

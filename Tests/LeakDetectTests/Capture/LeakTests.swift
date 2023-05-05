@@ -1,11 +1,12 @@
 //
 //  LeakTests.swift
-//  
+//
 //
 //  Created by Yume on 2022/7/8.
 //
 
 import Foundation
+import SwiftSyntax
 @testable import LeakDetectKit
 @testable import SKClient
 import XCTest
@@ -20,16 +21,20 @@ class _LeakTests: XCTestCase {
     static let _class = resource(file: "Structures.swift.data")
     static let _load = [_functions, _class]
     
-    static func count(_ code: String) throws -> Int {
+    static func detect(_ code: String) throws -> [IdentifierExprSyntax] {
         let client = try SKClient(code: code, arguments: SDK.macosx.pathArgs + Self._load)
         
-        let visitor = DeclsVisitor()
+        let visitor = DeclsVisitor(viewMode: .sourceAccurate)
         visitor.customWalk(client.sourceFile)
         
         try client.editorOpen()
-        let count = try visitor.detect(client, .vscode, false)
+        let ids = try visitor.detect(client, .vscode, false)
         try client.editorClose()
         
-        return count
+        return ids
+    }
+    
+    static func count(_ code: String) throws -> Int {
+        return try detect(code).count
     }
 }

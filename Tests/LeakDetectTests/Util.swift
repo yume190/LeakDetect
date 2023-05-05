@@ -16,7 +16,6 @@ func resource(file: String) -> String {
     return sourceFile.appendingPathComponent(file).path
 }
 
-
 @inline(__always)
 func prepare(code: String, action: (SKClient) throws -> ()) throws {
     let client = try SKClient(code: code)

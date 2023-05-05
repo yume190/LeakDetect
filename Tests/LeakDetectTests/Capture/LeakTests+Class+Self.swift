@@ -1,6 +1,6 @@
 //
 //  Class_Self_LeakTests.swift
-//  
+//
 //
 //  Created by Yume on 2022/7/11.
 //
@@ -11,7 +11,9 @@ import XCTest
 final class Class_Self_LeakTests: _LeakTests {}
 
 // MARK: - class -
+
 // MARK: Single self
+
 extension Class_Self_LeakTests {
     final func testNoLeak() throws {
         let code = """
@@ -45,6 +47,7 @@ extension Class_Self_LeakTests {
 }
 
 // MARK: Nested self
+
 extension Class_Self_LeakTests {
     final func testNested1() throws {
         let code = """
@@ -63,7 +66,6 @@ extension Class_Self_LeakTests {
         
         try XCTAssertEqual(Self.count(code), 2)
     }
-    
     
     final func testNested2() throws {
         let code = """
@@ -139,6 +141,7 @@ extension Class_Self_LeakTests {
 }
 
 // MARK: Single self assign
+
 extension Class_Self_LeakTests {
     final func testAssign1() throws {
         let code = """

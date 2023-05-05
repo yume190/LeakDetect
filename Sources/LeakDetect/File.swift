@@ -13,7 +13,7 @@ import SwiftSyntax
 
 protocol DetectVisitor: AnyObject {
     init()
-    func detect(_ client: SKClient, _ reporter: Reporter, _ isVerbose: Bool) throws -> Int
+    func detectCount(_ client: SKClient, _ reporter: Reporter, _ isVerbose: Bool) throws -> Int
     func walk<SyntaxType: SyntaxProtocol>(_ node: SyntaxType)
 }
 
@@ -37,7 +37,7 @@ struct File<Visitor>: Comparable {
 extension File where Visitor: DetectVisitor {
     func detect(_ reporter: Reporter, _ isVerbose: Bool) throws -> Int {
         try self.client.editorOpen()
-        let count = try self.visitor.detect(self.client, reporter, isVerbose)
+        let count = try self.visitor.detectCount(self.client, reporter, isVerbose)
         try self.client.editorClose()
         return count
     }
@@ -52,24 +52,4 @@ extension Module {
             return .init(filePath: filePath, client: client, visitor: visitor)
         }
     }
-    
-//    func walk<Visitor: DetectVisitor>() async throws -> [File<Visitor>] {
-//        return try await withThrowingTaskGroup(of: File<Visitor>.self) { group in
-//            for filePath in self.sourceFiles {
-//                group.addTask {
-//                    let client: client = try client(path: filePath, arguments: self.compilerArguments)
-//                    let visitor = Visitor()
-//                    visitor.walk(client.sourceFile)
-//                    return .init(filePath: filePath, client: client, visitor: visitor)
-//                }
-//            }
-//
-//            var result: [File<Visitor>] = []
-//            for try await target in group {
-//                result.append(target)
-//            }
-//
-//            return result
-//        }
-//    }
 }

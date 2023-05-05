@@ -1,6 +1,6 @@
 //
 //  EscapingDetector.swift
-//  
+//
 //
 //  Created by Yume on 2022/5/13.
 //
@@ -19,7 +19,7 @@ public enum EscapingDetector {
         let target: String = code
         do {
             let source: SourceFileSyntax = try SyntaxParser.parse(source: target)
-            let visitor = TypeEscapeVisitor()
+            let visitor = TypeEscapeVisitor(viewMode: .sourceAccurate)
             visitor.walk(source)
             return visitor.isEscape
         } catch {
@@ -28,7 +28,7 @@ public enum EscapingDetector {
     }
     
     public static func detect(type: TypeSyntax) -> Bool {
-        let visitor = TypeEscapeVisitor()
+        let visitor = TypeEscapeVisitor(viewMode: .sourceAccurate)
         _ = visitor.find(type: type)
         return visitor.isEscape
     }
@@ -37,7 +37,7 @@ public enum EscapingDetector {
         let target: String = code
         
         let source: SourceFileSyntax = try SyntaxParser.parse(source: target)
-        let visitor = FunctionParameterListEscapeVisitor()
+        let visitor = FunctionParameterListEscapeVisitor(viewMode: .sourceAccurate)
         visitor.walk(source)
         return visitor
     }

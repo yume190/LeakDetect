@@ -1,6 +1,6 @@
 //
 //  DeclsVisitor.swift
-//  
+//
 //
 //  Created by Yume on 2022/5/23.
 //
@@ -14,41 +14,46 @@ import SwiftSyntax
 /// Source Code use ``customWalk`` to walk `static func` and ...
 public final class DeclsVisitor: SyntaxVisitor {
     private lazy var _subVisitors: [DeclsVisitor] = []
-    private let leak: LeakVisitor = .init(isInDecl: true)
+    private let leak: LeakVisitor = .init(isInDecl: true, parentVisitor: nil)
     
+    override public final func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
+        self.append(node.members)
+        return .skipChildren
+    }
+
+    override public final func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
+        self.append(node.members)
+        return .skipChildren
+    }
+    
+    override public final func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
+        self.append(node.members)
+        return .skipChildren
+    }
+
+    override public final func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
+        self.append(node.members)
+        return .skipChildren
+    }
+}
+
+extension DeclsVisitor {
     private var subVisitors: [DeclsVisitor] {
-        return [self] + _subVisitors.flatMap(\.subVisitors)
+        return [self] + self._subVisitors.flatMap(\.subVisitors)
     }
+
     internal var leakVisitors: [LeakVisitor] {
-        return subVisitors.flatMap(\.leak.subVisitors)
+        return self.subVisitors.flatMap(\.leak.subVisitors)
     }
     
-    public final func customWalk<SyntaxType>(_ node: SyntaxType) where SyntaxType : SyntaxProtocol {
+    public final func customWalk<SyntaxType>(_ node: SyntaxType) where SyntaxType: SyntaxProtocol {
         super.walk(node)
-        leak.walk(node)
+        self.leak.walk(node)
     }
     
     private final func append<Syntax: SyntaxProtocol>(_ syntax: Syntax) {
-        let visitor = DeclsVisitor()
-        _subVisitors.append(visitor)
+        let visitor = DeclsVisitor(viewMode: .sourceAccurate)
+        self._subVisitors.append(visitor)
         visitor.customWalk(syntax)
-    }
-    
-    public final override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-        self.append(node.members)
-        return .skipChildren
-    }
-    public final override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-        self.append(node.members)
-        return .skipChildren
-    }
-    
-    public final override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-        self.append(node.members)
-        return .skipChildren
-    }
-    public final override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
-        self.append(node.members)
-        return .skipChildren
     }
 }

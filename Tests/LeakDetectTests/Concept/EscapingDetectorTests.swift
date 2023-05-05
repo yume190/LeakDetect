@@ -6,14 +6,13 @@
 //
 
 import Foundation
-import XCTest
-@testable import SKClient
 @testable import LeakDetectKit
+@testable import SKClient
+import XCTest
 
 typealias Complete = () -> Void
 
 final class EscapingDetectorTests: XCTestCase {
-    
     private let normal = "@escaping () -> Void"
     private let parenthesis = "(() -> Void)"
     private let parenthesisOption = "(() -> Void)?"

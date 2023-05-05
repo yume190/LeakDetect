@@ -5,57 +5,55 @@
 //  Created by Yume on 2022/9/1.
 //
 
-
 import Foundation
 import XCTest
 
-fileprivate class Concept {
+private class Concept {
     typealias Callback = () -> Concept?
-    private var cb: Callback? = nil
-    private var nest: Callback? = nil
+    private var cb: Callback?
+    private var nest: Callback?
     
     func leak() -> Concept? {
-        self.cb = {
+        cb = {
             let nest = { [weak self] in
-                return self
+                self
             }
             return nest()
         }
-        return self.cb?()
+        return cb?()
     }
     
     func noleak() -> Concept? {
-        self.cb = { [weak self] in
+        cb = { [weak self] in
             self?.nest = { [weak self] in
-                return self
+                self
             }
             return self?.nest?()
         }
-        return self.cb?()
+        return cb?()
     }
     
     func captureWeak() -> Concept? {
-        self.cb = { [weak self] in
+        cb = { [weak self] in
             self?.nest = {
-                return self
+                self
             }
             return self?.nest?()
         }
-        return self.cb?()
+        return cb?()
     }
     
     func captureStrong() -> Concept? {
-        self.cb = { [weak self] in
+        cb = { [weak self] in
             let `self`: Concept? = self
             self?.nest = {
-                return self
+                self
             }
             return self?.nest?()
         }
-        return self.cb?()
+        return cb?()
     }
 }
-
 
 final class ConcepctTests: XCTestCase {
     private var concept: Concept? = nil
@@ -63,13 +61,13 @@ final class ConcepctTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        self.concept = Concept()
-        self._concept = self.concept
+        concept = Concept()
+        _concept = concept
     }
     
     override func tearDown() {
-        self.concept = nil
-        self._concept = nil
+        concept = nil
+        _concept = nil
         super.tearDown()
     }
     
@@ -100,5 +98,4 @@ final class ConcepctTests: XCTestCase {
         concept = nil
         XCTAssertNotNil(_concept)
     }
-    
 }

@@ -18,11 +18,11 @@ final class ReferenceTests: XCTestCase {
             var a: A {
                 return self
             }
-            
+        
             func b() -> A {
                 return self
             }
-            
+        
             lazy var c: A = {
                 return self
             }()
@@ -38,14 +38,14 @@ final class ReferenceTests: XCTestCase {
             XCTAssertEqual(code[23], "{")
             
             /// b
-            try XCTAssertEqual(client(91).offset, 65)
-            XCTAssertEqual(code[91...94], "self")
-            XCTAssertEqual(code[65...72], "b() -> A")
+            try XCTAssertEqual(client(87).offset, 61)
+            XCTAssertEqual(code[87...90], "self")
+            XCTAssertEqual(code[61...68], "b() -> A")
             
             /// c
-            try XCTAssertEqual(client(144).offset, 120)
-            XCTAssertEqual(code[144...147], "self")
-            XCTAssertEqual(code[120...123], "c: A")
+            try XCTAssertEqual(client(136).offset, 112)
+            XCTAssertEqual(code[136...139], "self")
+            XCTAssertEqual(code[112...115], "c: A")
         }
     }
     
@@ -58,7 +58,7 @@ final class ReferenceTests: XCTestCase {
                     print(aa, a, self, this)
                 }
             }
-            
+        
             init() {}
         }
         """

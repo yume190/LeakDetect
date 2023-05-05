@@ -1,14 +1,14 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Yume on 2022/5/23.
 //
 
 import Foundation
-import XCTest
-@testable import SKClient
 @testable import LeakDetectKit
+@testable import SKClient
+import XCTest
 
 final class USRTests: XCTestCase {
     // 12
@@ -22,7 +22,6 @@ final class USRTests: XCTestCase {
         XCTAssertTrue("$s14VendorDatabase16DBBindingRecoverVD".isStruct)
         
         XCTAssertFalse("$s7RxRelay08BehaviorB0CySo7UIImageCSgGD".isStruct)
-        
         
         XCTAssertTrue("$s4main3BBBVmD".isStruct)
         XCTAssertTrue("$s4main4BBBBVyAA3BBBVGD".isStruct)

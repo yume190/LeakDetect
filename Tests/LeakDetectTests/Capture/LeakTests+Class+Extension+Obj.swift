@@ -11,7 +11,9 @@ import XCTest
 final class ClassEx_Obj_LeakTests: _LeakTests {}
 
 // MARK: - class -
+
 // MARK: Single self
+
 extension ClassEx_Obj_LeakTests {
     final func testNoLeak() throws {
         let code = """
@@ -45,6 +47,7 @@ extension ClassEx_Obj_LeakTests {
 }
 
 // MARK: Nested self
+
 extension ClassEx_Obj_LeakTests {
     final func testNested1() throws {
         let code = """
@@ -63,7 +66,6 @@ extension ClassEx_Obj_LeakTests {
         
         try XCTAssertEqual(Self.count(code), 2)
     }
-    
     
     final func testNested2() throws {
         let code = """
@@ -139,6 +141,7 @@ extension ClassEx_Obj_LeakTests {
 }
 
 // MARK: Single self assign
+
 extension ClassEx_Obj_LeakTests {
     final func testAssign1() throws {
         let code = """

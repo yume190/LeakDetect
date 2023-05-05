@@ -6,13 +6,13 @@
 //
 
 import Foundation
-import XCTest
-@testable import SKClient
 @testable import LeakDetectKit
+@testable import SKClient
+import XCTest
 
 final class FunctionParameterListEscapeTests: XCTestCase {
     private typealias C = (@escaping (@escaping (Int) -> ()) -> (), Int) -> ()
-    private typealias B = (((@escaping (Int) -> ()) -> ()), Int) -> ()
+    private typealias B = ((@escaping (Int) -> ()) -> (), Int) -> ()
     private let normal = "(@escaping (@escaping (Int) -> ()) -> (), Int) -> ()"
     private let parenthesis = "(((@escaping (Int) -> ()) -> ()), Int) -> ()"
     

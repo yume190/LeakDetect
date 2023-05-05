@@ -62,7 +62,7 @@ public final class AssignClosureVisitor: SyntaxVisitor {
         }
     }
     
-    public final func detect(_ client: SKClient, _ reporter: Reporter, _ isVerbose: Bool) throws -> Int {
+    public final func detectCount(_ client: SKClient, _ reporter: Reporter, _ isVerbose: Bool) throws -> Int {
         
         let locs = _detect(client)
         

@@ -1,6 +1,6 @@
 //
 //  FunctionTests.swift
-//  
+//
 //
 //  Created by Yume on 2022/6/2.
 //
@@ -43,11 +43,9 @@ final class FunctionTests: XCTestCase {
             print(queue.raw)
             XCTAssertEqual(code[83...87], "async")
             
-            
             /// main
             let main = try client(121)
             XCTAssertEqual(code[121...125], "async")
-            
             
             let animate = try client(147)
             
