@@ -18,7 +18,7 @@ func resource(file: String) -> String {
 
 @inline(__always)
 func prepare(code: String, action: (SKClient) throws -> ()) throws {
-    let client = try SKClient(code: code)
+    let client = SKClient(code: code)
     try prepare(client: client, action: action)
 }
 

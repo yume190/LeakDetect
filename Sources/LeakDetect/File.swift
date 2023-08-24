@@ -10,6 +10,9 @@ import Foundation
 import LeakDetectKit
 import SourceKittenFramework
 import SwiftSyntax
+import SwiftParser
+import SwiftSyntaxParser
+import PathKit
 
 protocol DetectVisitor: AnyObject {
     init()
@@ -44,11 +47,28 @@ extension File where Visitor: DetectVisitor {
 }
 
 extension Module {
-    func walk<Visitor: DetectVisitor>() throws -> [File<Visitor>] {
+    func walkAssign() throws -> [File<AssignClosureVisitor>] {
         return try self.sourceFiles.map { filePath in
             let client = try SKClient(path: filePath, arguments: self.compilerArguments)
-            let visitor = Visitor()
+            let visitor = AssignClosureVisitor(viewMode: .sourceAccurate)
             visitor.walk(client.sourceFile)
+            return .init(filePath: filePath, client: client, visitor: visitor)
+        }
+    }
+
+    func walkCapture() throws -> [File<DeclsVisitor>] {
+        return try self.sourceFiles.compactMap { filePath in
+            let path = Path(filePath)
+            let code = try path.read(.utf8)
+            let source = try SyntaxParser.parse(source: code)
+            let rewriter = CaptureListRewriter()
+            let newSource = rewriter.visit(source)
+            let newCode = newSource.description
+            let client = SKClient(path: filePath, code: newCode, arguments: compilerArguments)
+
+//            let client = try SKClient(path: filePath, arguments: self.compilerArguments)
+            let visitor = DeclsVisitor(viewMode: .sourceAccurate)
+            visitor.customWalk(client.sourceFile)
             return .init(filePath: filePath, client: client, visitor: visitor)
         }
     }

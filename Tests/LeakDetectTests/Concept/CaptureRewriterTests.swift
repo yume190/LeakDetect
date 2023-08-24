@@ -20,7 +20,7 @@ final class CaptureRewriterTests: XCTestCase {
         """
 
         let source = try SyntaxParser.parse(source: code)
-        let rewriter = CaptureRewriter()
+        let rewriter = CaptureListRewriter()
         let _ = rewriter.visit(source)
 
         XCTAssertEqual(rewriter.infos.count, 3)
@@ -50,7 +50,7 @@ final class RewriterLeakTests: _LeakTests {
         """
 
         let source = try SyntaxParser.parse(source: code)
-        let rewriter = CaptureRewriter()
+        let rewriter = CaptureListRewriter()
         let newSource = rewriter.visit(source)
         let newCode = newSource.description
         

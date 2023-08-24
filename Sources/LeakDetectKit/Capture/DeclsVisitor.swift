@@ -15,7 +15,7 @@ import SwiftSyntax
 public final class DeclsVisitor: SyntaxVisitor {
     private lazy var _subVisitors: [DeclsVisitor] = []
     private let leak: LeakVisitor = .init(isInDecl: true, parentVisitor: nil)
-    
+
     override public final func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
         self.append(node.members)
         return .skipChildren
@@ -25,7 +25,7 @@ public final class DeclsVisitor: SyntaxVisitor {
         self.append(node.members)
         return .skipChildren
     }
-    
+
     override public final func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
         self.append(node.members)
         return .skipChildren
@@ -42,15 +42,15 @@ extension DeclsVisitor {
         return [self] + self._subVisitors.flatMap(\.subVisitors)
     }
 
-    internal var leakVisitors: [LeakVisitor] {
+    var leakVisitors: [LeakVisitor] {
         return self.subVisitors.flatMap(\.leak.subVisitors)
     }
-    
+
     public final func customWalk<SyntaxType>(_ node: SyntaxType) where SyntaxType: SyntaxProtocol {
         super.walk(node)
         self.leak.walk(node)
     }
-    
+
     private final func append<Syntax: SyntaxProtocol>(_ syntax: Syntax) {
         let visitor = DeclsVisitor(viewMode: .sourceAccurate)
         self._subVisitors.append(visitor)

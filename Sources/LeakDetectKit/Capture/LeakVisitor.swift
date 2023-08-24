@@ -16,45 +16,45 @@ import SwiftSyntax
 
 /// Find sub `function`/`closure`
 ///     pass id to ``IdentifierVisitor``
-internal final class LeakVisitor: SyntaxVisitor {
-    internal enum ClosureType {
+final class LeakVisitor: SyntaxVisitor {
+    enum ClosureType {
         case trailing
         case label(String)
         case wild
     }
-    
+
     /// is Visistor in (true)
     ///  * file
     ///  * class
     ///  * struct
     ///  * enum
     ///  * extension
-    internal let isInDecl: Bool
-    
+    let isInDecl: Bool
+
     /// The start syntax of closure: `{`.
     /// Or `self` reference
     ///  * functionName
     ///  * ...
-    internal let start: SyntaxProtocol?
+    let start: SyntaxProtocol?
     /// the `FunctionCallsyntax`
-    internal let function: ExprSyntax?
-    internal let closureType: ClosureType
-    internal unowned let parentVisitor: LeakVisitor?
-    
+    let function: ExprSyntax?
+    let closureType: ClosureType
+    unowned let parentVisitor: LeakVisitor?
+
     /// for `ClosureCaptureItemSyntax` expression
-    internal lazy var closureCaptureIDs: [IdentifierExprSyntax] = []
-    
+    lazy var closureCaptureIDs: [IdentifierExprSyntax] = []
+
     private lazy var _subVisitors: [LeakVisitor] = []
-    internal var subVisitors: [LeakVisitor] {
+    var subVisitors: [LeakVisitor] {
         return [self] + self._subVisitors.flatMap(\.subVisitors)
     }
-    
+
     private lazy var _idVisitor: IdentifierVisitor = .init(viewMode: .sourceAccurate)
-    internal var ids: [IdentifierExprSyntax] {
+    var ids: [IdentifierExprSyntax] {
         return self._idVisitor.ids
     }
-    
-    internal init(
+
+    init(
         isInDecl: Bool,
         start: SyntaxProtocol? = nil,
         function: ExprSyntax? = nil,
@@ -68,35 +68,35 @@ internal final class LeakVisitor: SyntaxVisitor {
         self.parentVisitor = parentVisitor
         super.init(viewMode: .sourceAccurate)
     }
-    
+
     // MARK: - Skip Decls(Start)
 
-    override internal final func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
+    override final func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
         return .skipChildren
     }
 
-    override internal final func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
+    override final func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         return .skipChildren
     }
 
-    override internal final func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
+    override final func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
         return .skipChildren
     }
 
-    override internal final func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
+    override final func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
         return .skipChildren
     }
-    
+
     // MARK: Skip Decls(End) -
-    
+
     /// VariableDeclSyntax
     /// letOrVar bindings
     /// var      a: Int = {1}()
     /// var      b: Int {1}
     /// let      c = 1
-    override internal final func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+    override final func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
         let list = node.bindings
-        
+
         if !self.isInDecl {
             walk(list)
             return .skipChildren
@@ -137,7 +137,7 @@ internal final class LeakVisitor: SyntaxVisitor {
 
         return .skipChildren
     }
-    
+
     /// FunctionDeclSyntax
     /// funcKeyword identifier signature body
     /// func        xxx        (a: Int)  {...}
@@ -147,15 +147,15 @@ internal final class LeakVisitor: SyntaxVisitor {
     ///     // self offset at xxx
     ///     //                ^
     /// }
-    override internal final func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+    override final func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         if let body = node.body {
             let visitor = LeakVisitor(isInDecl: false, start: node.identifier, parentVisitor: self)
             self.append(visitor, node: body)
         }
-        
+
         return .skipChildren
     }
-    
+
     /// ClosureExprSyntax
     /// { signature             statements }
     ///   [weak self] a, b in   ...
@@ -164,19 +164,19 @@ internal final class LeakVisitor: SyntaxVisitor {
     ///     // self offset at [weak self]
     ///     //                      ^
     /// }
-    override internal final func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
+    override final func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
         let visitor = LeakVisitor(isInDecl: false, start: node.leftBrace, parentVisitor: self)
         self.append(visitor, closure: node)
-        
+
         return .skipChildren
     }
-    
+
     /// Only for Sub LeakVisitor when meet `ClosureExprSyntax`
     ///
     /// specifier name assignToken expression
     /// weak      a    =           a
     ///                            a
-    override internal final func visit(_ node: ClosureCaptureItemSyntax) -> SyntaxVisitorContinueKind {
+    override final func visit(_ node: ClosureCaptureItemSyntax) -> SyntaxVisitorContinueKind {
         if node.name != nil && node.assignToken != nil {
             if let id = node.expression.as(IdentifierExprSyntax.self) {
                 self.closureCaptureIDs.append(id)
@@ -184,31 +184,31 @@ internal final class LeakVisitor: SyntaxVisitor {
         }
         return .skipChildren
     }
-    
+
     // MARK: Binding
 
     /// if let x = expr
-    override internal final func visit(_ node: OptionalBindingConditionSyntax) -> SyntaxVisitorContinueKind {
+    override final func visit(_ node: OptionalBindingConditionSyntax) -> SyntaxVisitorContinueKind {
         if let value = node.initializer?.value {
             self.walk(value)
             self._idVisitor.walk(value)
         }
         return .skipChildren
     }
-    
+
     /// PatternBindingSyntax (let `x = expr`)
     /// pattern  initializer
     /// x        = expr
-    override internal final func visit(_ node: PatternBindingSyntax) -> SyntaxVisitorContinueKind {
+    override final func visit(_ node: PatternBindingSyntax) -> SyntaxVisitorContinueKind {
         if let value = node.initializer?.value {
             self.walk(value)
             self._idVisitor.walk(value)
         }
         return .skipChildren
     }
-    
+
     /// a = b
-    override internal final func visit(_ node: ExprListSyntax) -> SyntaxVisitorContinueKind {
+    override final func visit(_ node: ExprListSyntax) -> SyntaxVisitorContinueKind {
         if node.count == 3 {
             let exprs: [ExprListSyntax.Element] = node.map { $0 }
             /// a = ?
@@ -220,7 +220,7 @@ internal final class LeakVisitor: SyntaxVisitor {
                     self._idVisitor.walk(exprs[2])
                     return .skipChildren
                 }
-                
+
                 /// a = b()
                 ///     walk `b()`
                 /// a = {}
@@ -232,13 +232,13 @@ internal final class LeakVisitor: SyntaxVisitor {
                 }
             }
         }
-        
+
         node.forEach { sub in
             self._idVisitor.walk(sub)
         }
         return .skipChildren
     }
-    
+
     /// FunctionCallExprSyntax a.b.c(1, 2, 3)
     /// calledExpression ( argumentList )
     /// a.b.c              1, 2, 3
@@ -246,10 +246,10 @@ internal final class LeakVisitor: SyntaxVisitor {
     /// closures:
     ///  * additionalTrailingClosures
     ///  * trailingClosure
-    override internal final func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+    override final func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         self._idVisitor.walk(node.calledExpression)
         self._idVisitor.walk(node.argumentList)
-        
+
         /// .abc().def().xxx()
         self.walk(node.calledExpression)
         self.walk(node.argumentList)
@@ -264,7 +264,7 @@ internal final class LeakVisitor: SyntaxVisitor {
             )
             self.append(visitor, closure: closure)
         }
-        
+
         if let closures = node.additionalTrailingClosures {
             // label colon closure
             // abc: {}
@@ -276,11 +276,11 @@ internal final class LeakVisitor: SyntaxVisitor {
                     type: .label(closure.label.text),
                     parentVisitor: self
                 )
-                
+
                 self.append(visitor, closure: closure.closure)
             }
         }
-        
+
         return .skipChildren
     }
 }
@@ -293,7 +293,7 @@ extension LeakVisitor {
         }
         self._subVisitors.append(visitor)
     }
-    
+
     private func append<Syntax: SyntaxProtocol>(_ visitor: LeakVisitor, node: Syntax) {
         visitor.walk(node)
         self._subVisitors.append(visitor)

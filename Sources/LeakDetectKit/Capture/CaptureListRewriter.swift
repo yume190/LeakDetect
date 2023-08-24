@@ -1,5 +1,5 @@
 //
-//  CaptureRewriter.swift
+//  CaptureListRewriter.swift
 //
 //
 //  Created by Yume on 2023/5/3.
@@ -8,7 +8,7 @@
 import Foundation
 import SwiftSyntax
 
-final class CaptureRewriter: SyntaxRewriter {
+final public class CaptureListRewriter: SyntaxRewriter {
     struct Info {
         let originSyntax: SyntaxProtocol
         let expresion: Int
@@ -20,7 +20,7 @@ final class CaptureRewriter: SyntaxRewriter {
     /// specifier name assignToken expression
     /// weak      a    =           a
     ///                            a
-    override func visit(_ node: ClosureCaptureItemSyntax) -> ClosureCaptureItemSyntax {
+    public override func visit(_ node: ClosureCaptureItemSyntax) -> ClosureCaptureItemSyntax {
         guard node.name == nil, node.assignToken == nil else {
             return node
         }

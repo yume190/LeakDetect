@@ -22,9 +22,12 @@ struct Command: ParsableCommand {
         cd LeakDetector
         # Must build once
         xcodebuild -workspace LeakDetectorDemo.xcworkspace -scheme LeakDetectorDemo -sdk iphonesimulator IPHONEOS_DEPLOYMENT_TARGET=13.0 build
-        export PROJECT_PATH=LeakDetectorDemo.xcworkspace
-        export TARGET_NAME=LeakDetectorDemo
-        leakDetect --mode capture
+        
+        leakDetect \
+            --mode capture \
+            --moduleName LeakDetectorDemo
+            --targetType xcworkspace \
+            --file LeakDetectorDemo.xcworkspace
 
         Mode:
         * assign: detecting assign instance function `x = self.func` or `y(self.func)`.
@@ -42,33 +45,71 @@ struct Command: ParsableCommand {
     @Option(name: [.customLong("reporter", withSingleDash: false)], help: "[\(Reporter.all)]")
     var reporter: Reporter = .vscode
     
-    @Argument
-    var paths: [String] = []
+    @Option(name: [.customLong("sdk", withSingleDash: false)], help: "[\(SDK.all)]")
+    var sdk: SDK = .iphonesimulator
+    
+    @Option(name: [.customLong("targetType", withSingleDash: false)], help: "[\(Reporter.all)]")
+    var targetType: TargetType = .xcodeproj
+    
+    @Option(name: [.customLong("moduleName", withSingleDash: false)], help: "Name of Swift module to document (can't be used with `--single-file`)")
+    var moduleName = ""
+    
+    @Option(name: [.customLong("file", withSingleDash: false)], help: "xcworkspace/xcproject/xxx.swift")
+    var file: String
+    
+    @Argument(help: "Arguments passed to `xcodebuild` or `swift build`")
+    var arguments: [String] = []
+    
+    
    
     typealias LeakCount = Int
    
-    private func prepare() async -> (String, String, [String]) {
-        return await withCheckedContinuation { continuation in
-            Env.prepare { (projectRoot: String, moduleName: String, args: [String]) in
-                continuation.resume(returning: (projectRoot, moduleName, args))
-            }
+    private var module: Module? {
+        let moduleName = self.moduleName.isEmpty ? nil : self.moduleName
+
+        switch targetType {
+        case .spm:
+            return Module(spmArguments: arguments, spmName: moduleName)
+//        case .singleFile:
+//            [targetFile.path] + sdk.pathArgs
+//            return nil
+        case .xcodeproj:
+            let newArgs: [String] = [
+                "-project",
+                file,
+                "-scheme",
+                self.moduleName,
+            ]
+            
+//            print(arguments + newArgs)
+//            guard let setting = CompilerArguments.byFile(name: self.moduleName, arguments: arguments + newArgs) else {
+//                print("no arg")
+//                return nil
+//            }
+//            return Module(name: self.moduleName, compilerArguments: setting.default)
+            return Module(xcodeBuildArguments: arguments + newArgs, name: moduleName)
+        case .xcodeworkspace:
+            let newArgs: [String] = [
+                "-workspace",
+                file,
+                "-scheme",
+                self.moduleName,
+            ]
+            return Module(xcodeBuildArguments: arguments + newArgs, name: moduleName)
         }
     }
     
     mutating func run() throws {
-        try Env.prepare { (_: String, moduleName: String, args: [String]) in
-            let module = Module(name: moduleName, compilerArguments: args)
+        guard let module = module else {
+            print("Can't create module")
+            return
+        }
         
-            switch mode {
-            case .assign:
-                try assign(module)
-            case .capture:
-                let root = (Path.current + (Env.projectPath.value ?? "")).parent()
-                let scanFolders = paths.map { path in
-                    (root + path).string
-                }
-                try capture(module, scanFolders)
-            }
+        switch mode {
+        case .assign:
+            try assign(module)
+        case .capture:
+            try capture(module) // , scanFolders)
         }
     }
     
@@ -81,32 +122,15 @@ struct Command: ParsableCommand {
     }
 }
 
-extension Array where Element == String {
-    func prefixIn(_ full: String) -> Bool {
-        let all = lazy.map {
-            full.hasPrefix($0)
-        }
-        return all.reduce(false) { partialResult, next in
-            partialResult || next
-        }
-    }
-}
-
 extension Command {
-    private func capture(_ module: Module, _ scanFolder: [String]) throws {
-        print("scanFolder: ", scanFolder)
-        
+    private func capture(_ module: Module) throws {
         var leakCount: LeakCount = 0
         defer { summery(leakCount) }
         
-        let files: [File<DeclsVisitor>] = try module.walk()
+        let files: [File<DeclsVisitor>] = try module.walkCapture()
         
         let all: Int = module.sourceFiles.count
         for (index, file) in files.sorted().enumerated() {
-            guard scanFolder.isEmpty || scanFolder.prefixIn(file.filePath) else {
-                continue
-            }
-            
             print("\("[SCAN FILE]:".applyingCodes(Color.yellow, Style.bold)) [\(index + 1)/\(all)] \(file.filePath)")
             leakCount += try file.detect(reporter, verbose)
         }
@@ -118,7 +142,7 @@ extension Command {
         var leakCount: LeakCount = 0
         defer { summery(leakCount) }
         
-        let files: [File<AssignClosureVisitor>] = try module.walk()
+        let files: [File<AssignClosureVisitor>] = try module.walkAssign()
         
         let all: Int = module.sourceFiles.count
         for (index, file) in files.sorted().enumerated() {
@@ -126,23 +150,4 @@ extension Command {
             leakCount += try file.detect(reporter, verbose)
         }
     }
-}
-
-extension Command {
-    enum Mode: String, CaseIterable, ExpressibleByArgument {
-        case assign
-        case capture
-       
-        static let all: String = Mode
-            .allCases
-            .map(\.rawValue)
-            .joined(separator: "|")
-    }
-}
-
-extension Reporter: ExpressibleByArgument {
-    static let all: String = Reporter
-        .allCases
-        .map(\.rawValue)
-        .joined(separator: "|")
 }

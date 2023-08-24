@@ -30,7 +30,7 @@ final class FunctionTests: XCTestCase {
         }
         """
         
-        let client = try SKClient(code: code, arguments: SDK.iphoneos.pathArgs + [
+        let client = SKClient(code: code, arguments: SDK.iphoneos.pathArgs + [
             "-target",
             "arm64-apple-ios11.0",
         ])
@@ -45,6 +45,7 @@ final class FunctionTests: XCTestCase {
             
             /// main
             let main = try client(121)
+            print(main)
             XCTAssertEqual(code[121...125], "async")
             
             let animate = try client(147)

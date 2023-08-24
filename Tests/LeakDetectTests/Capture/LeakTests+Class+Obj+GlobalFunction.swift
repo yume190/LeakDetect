@@ -79,7 +79,7 @@ extension Class_Obj_GlobalFunction_LeakTests {
         try XCTAssertEqual(Self.count(code), 0)
     }
 
-    #warning("2")
+    /// this case can solve by `escape { [a] in ... }`
     final func testNested3() throws {
         let code = """
         func leak() {
@@ -112,7 +112,6 @@ extension Class_Obj_GlobalFunction_LeakTests {
         try XCTAssertEqual(Self.count(code), 1)
     }
 
-    #warning("1")
     final func testNestedSpecial() throws {
         let code = """
         func leak() {
@@ -124,7 +123,7 @@ extension Class_Obj_GlobalFunction_LeakTests {
         }
         """
 
-        try XCTAssertEqual(Self.count(code), 0)
+        try XCTAssertEqual(Self.count(code), 1)
     }
 }
 

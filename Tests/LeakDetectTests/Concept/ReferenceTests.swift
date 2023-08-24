@@ -139,7 +139,7 @@ final class ReferenceTests: XCTestCase {
             file,
         ]
 
-        let client = try SKClient(code: code, arguments: args)
+        let client = SKClient(code: code, arguments: args)
         try prepare(client: client) { client in
             let res = try client(24)
             XCTAssertEqual(res.offset, 4)
