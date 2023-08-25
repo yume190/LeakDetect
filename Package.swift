@@ -40,7 +40,6 @@ let package = Package(
                 .product(name: "SourceKittenFramework", package: "SourceKitten"),
                 .product(name: "SKClient", package: "TypeFill"),
                 "LeakDetectKit",
-                "PathKit",
             ]
         ),
 
@@ -50,6 +49,7 @@ let package = Package(
             name: "LeakDetectKit",
             dependencies: [
                 "Rainbow",
+                "PathKit",
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxParser", package: "swift-syntax"),
                 .product(name: "SKClient", package: "TypeFill"),

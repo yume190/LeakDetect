@@ -14,33 +14,40 @@ mint install yume190/LeakDetect
 ## Usage
 
 ``` bash
-USAGE: command [--verbose] [--mode <mode>]
+leakDetect \
+    --moduleName "SCHEME NAME" \
+    --targetType xcworkspace \
+    --file Sample.xcworkspace 
+    
+leakDetect \
+    --moduleName "SCHEME NAME" \
+    --targetType xcodeproj \
+    --file Sample.xcodeproj
 ```
 
-### Environment Variable(Need)
+#### [Assign](LeakDetectKit/Assign/AssignClosureVisitor.swift)
 
- * `PROJECT_TEMP_ROOT`/`PROJECT_PATH`
- * `TARGET_NAME`
+Detect assign instance function.
+ 
+1. `x = self.func`
+  [o] Check function is `instance function`.
+  [x] Check self is `struct`
+2. `y(self.func)`
+  [o] Check function is `instance function`.
+  [x] Check parameter is `escaping closure`
 
-#### Environment Variable(Example)
+see [Don't use this syntax!](https://www.youtube.com/watch?v=mzsz_Tit1HA). 
 
- * `PROJECT_TEMP_ROOT`="/PATH_TO/DerivedData/TypeFill-abpidkqveyuylveyttvzvsspldln/Build/Intermediates.noindex"
- * `PROJECT_PATH`="/PATH_TO/xxx.xcodeproj" or "/PATH_TO/xxx.xcworkspace"
- * `TARGET_NAME`="Typefill"
-
-> PROJECT_PATH: relative path
-
-> PROJECT_TEMP_ROOT: absolute path
-
-### mode
-
- * `assign`
- * `capture`
-
-#### Assign
-
-Detect assign instance function `x = self.func` or `y(self.func)`.
-see [Don't use this syntax!](https://www.youtube.com/watch?v=mzsz_Tit1HA).
+```swift
+func escape(block: @escaping () -> Void) {}
+class Temp {
+  func instanceFunction() {}
+  func leak() {
+    let x = self.instanceFunction
+    escape(block: self.instanceFunction)
+  }
+}
+```
 
 #### Capture
 
@@ -49,11 +56,16 @@ Detect instance captured by blocks(closure/function).
 ## Example
 
 ```sh
+# Example:
 git clone https://github.com/antranapp/LeakDetector
 cd LeakDetector
-# Must build once or use XCode to build
-xcodebuild -workspace LeakDetectorDemo.xcworkspace -scheme LeakDetectorDemo -sdk iphonesimulator IPHONEOS_DEPLOYMENT_TARGET=13.0 build
-export PROJECT_PATH=LeakDetectorDemo.xcworkspace
-export TARGET_NAME=LeakDetectorDemo
-leakDetect --mode capture
+
+leakDetect \
+    --module LeakDetectorDemo \
+    --targetType xcworkspace \
+    --file LeakDetectorDemo.xcworkspace
+
+# Mode:
+# * assign: detecting assign instance function `x = self.func` or `y(self.func)`.
+# * capture: detecting capture instance in closure.
 ```

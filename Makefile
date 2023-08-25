@@ -1,17 +1,18 @@
 VERSION = 0.0.1
 
 .PHONY: build
-build: 
+build:
 	swift build
 
 # --parallel
 .PHONY: test
 test: build
-	@swift test -v 2>&1 | xcpretty
+	# @swift test -v 2>&1 | xcpretty
+	@swift test -v 2>&1 | xcbeautify
 
 .PHONY: release
-release: 
-	@swift build -c release 
+release:
+	@swift build -c release
 # @swift build -c release --arch arm64 --arch x86_64
 
 .PHONY: install
@@ -19,7 +20,7 @@ install: release
 	@cp .build/release/leakDetect /usr/local/bin
 
 .PHONY: clear
-clear: 
+clear:
 	@rm /usr/local/bin/leakDetect
 
 .PHONY: clearAll
@@ -37,3 +38,10 @@ libDetail: release
 .PHONY: graph
 graph:
 	swift package show-dependencies --format dot | dot -Tsvg -o graph.svg
+
+.PHONY: single
+single:
+	leakDetect \
+		--targetType singleFile \
+		--sdk macosx \
+		--file temp.swift --verbose

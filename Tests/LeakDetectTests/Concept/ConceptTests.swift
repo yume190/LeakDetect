@@ -14,7 +14,7 @@ private class Concept {
     private var nest: Callback?
     
     func leak() -> Concept? {
-        cb = {
+        cb = { // [self]
             let nest = { [weak self] in
                 self
             }

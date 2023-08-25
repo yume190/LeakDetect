@@ -18,8 +18,8 @@ final public class CaptureListRewriter: SyntaxRewriter {
     private var offset = 0
 
     /// specifier name assignToken expression
-    /// weak      a    =           a
-    ///                            a
+    /// weak      a    =           a          [weak a = a]
+    /// weak                       a          [weak     a]
     public override func visit(_ node: ClosureCaptureItemSyntax) -> ClosureCaptureItemSyntax {
         guard node.name == nil, node.assignToken == nil else {
             return node

@@ -9,9 +9,9 @@ import Foundation
 import SwiftSyntax
 
 /// only visit:
-///     `class`, `struct`, `enum`, `extension`
+///     `class`, `struct`, `enum`, `extension`, `actor`, ~~`protocol`~~
 ///
-/// Source Code use ``customWalk`` to walk `static func` and ...
+/// Source Code use ``customWalk`` to walk `static func` and `sub DeclsVisitor`
 public final class DeclsVisitor: SyntaxVisitor {
     private lazy var _subVisitors: [DeclsVisitor] = []
     private let leak: LeakVisitor = .init(isInDecl: true, parentVisitor: nil)
@@ -35,10 +35,15 @@ public final class DeclsVisitor: SyntaxVisitor {
         self.append(node.members)
         return .skipChildren
     }
+    
+    override public final func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
+        self.append(node.members)
+        return .skipChildren
+    }
 }
 
 extension DeclsVisitor {
-    private var subVisitors: [DeclsVisitor] {
+    var subVisitors: [DeclsVisitor] {
         return [self] + self._subVisitors.flatMap(\.subVisitors)
     }
 

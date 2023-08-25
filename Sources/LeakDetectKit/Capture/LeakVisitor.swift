@@ -13,7 +13,7 @@ import SwiftSyntax
 
 /// only visit:
 ///  * VariableDeclSyntax
-
+///
 /// Find sub `function`/`closure`
 ///     pass id to ``IdentifierVisitor``
 final class LeakVisitor: SyntaxVisitor {
@@ -24,11 +24,13 @@ final class LeakVisitor: SyntaxVisitor {
     }
 
     /// is Visistor in (true)
-    ///  * file
     ///  * class
     ///  * struct
     ///  * enum
     ///  * extension
+    ///  * actor
+    /// is Visistor in (file)
+    ///  * file
     let isInDecl: Bool
 
     /// The start syntax of closure: `{`.
@@ -84,6 +86,10 @@ final class LeakVisitor: SyntaxVisitor {
     }
 
     override final func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
+        return .skipChildren
+    }
+    
+    override final func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
         return .skipChildren
     }
 

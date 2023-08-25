@@ -1,12 +1,12 @@
 //
-//  File 2.swift
-//  
+//  Arguments+Ex.swift
+//
 //
 //  Created by Yume on 2023/8/24.
 //
 
-import Foundation
 import ArgumentParser
+import Foundation
 import SKClient
 
 extension Reporter: ExpressibleByArgument {
@@ -23,18 +23,17 @@ public enum TargetType: String, CaseIterable, ExpressibleByArgument {
         .allCases
         .map(\.rawValue)
         .joined(separator: "|")
-    
+
     case xcodeproj
-    case xcodeworkspace
-//        case singleFile
+    case xcworkspace
+    case singleFile
     case spm
 }
-
 
 enum Mode: String, CaseIterable, ExpressibleByArgument {
     case assign
     case capture
-   
+
     static let all: String = Mode
         .allCases
         .map(\.rawValue)
