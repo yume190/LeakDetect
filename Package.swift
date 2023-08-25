@@ -40,6 +40,7 @@ let package = Package(
                 .product(name: "SourceKittenFramework", package: "SourceKitten"),
                 .product(name: "SKClient", package: "TypeFill"),
                 "LeakDetectKit",
+                "PathKit",
             ]
         ),
 

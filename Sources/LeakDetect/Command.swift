@@ -23,10 +23,6 @@ struct Command: ParsableCommand {
             --module LeakDetectorDemo \
             --targetType xcworkspace \
             --file LeakDetectorDemo.xcworkspace
-
-        # Mode:
-        # * assign: detecting assign instance function `x = self.func` or `y(self.func)`.
-        # * capture: detecting capture instance in closure.
         """,
         version: "0.0.3"
     )
@@ -41,7 +37,7 @@ struct Command: ParsableCommand {
     var sdk: SDK = .iphonesimulator
 
     @Option(name: [.customLong("targetType", withSingleDash: false)], help: "[\(Reporter.all)]")
-    var targetType: TargetType = .xcodeproj
+    var targetType: TargetType = .auto
 
     @Option(name: [.customLong("module", withSingleDash: false)], help: "Name of Swift module to document (can't be used with `--single-file`)")
     var moduleName = ""
@@ -60,8 +56,8 @@ struct Command: ParsableCommand {
 
     private var module: Module? {
         let moduleName = self.moduleName.isEmpty ? nil : self.moduleName
-
-        switch targetType {
+        
+        switch targetType.detect(path) {
         case .spm:
             return Module(spmArguments: arguments, spmName: moduleName)
         case .singleFile:
@@ -82,11 +78,13 @@ struct Command: ParsableCommand {
                 self.moduleName,
             ]
             return Module(xcodeBuildArguments: arguments + newArgs, name: moduleName)
+        case .auto:
+            return nil
         }
     }
 
     mutating func run() throws {
-        if case .singleFile = targetType {
+        if case .singleFile = targetType.detect(path) {
             try SingleFilePipeline(path, arguments + [path] + sdk.pathArgs)
                 .detect(reporter, verbose)
             return

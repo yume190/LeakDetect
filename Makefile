@@ -42,6 +42,5 @@ graph:
 .PHONY: single
 single:
 	leakDetect \
-		--targetType singleFile \
 		--sdk macosx \
-		--file temp.swift --verbose
+		--file fixture/temp.swift

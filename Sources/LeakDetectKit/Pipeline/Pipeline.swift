@@ -69,18 +69,6 @@ public struct SingleFilePipeline {
         let visitors = state2(client)
         try client.editorOpen()
         let count = try visitors.detect(client, reporter, isVerbose)
-        print("Found blocks: \(visitors.capture.subVisitors.count)")
-//        let ids = visitors.capture.leakVisitors
-//            .flatMap(\.ids)
-//            .map {
-//                $0.withoutTrivia().description
-//            }
-//            .joined(separator: "\n")
-//        
-//        print("""
-//        Found blocks:
-//        \(ids)
-//        """)
         try client.editorClose()
         summery(count)
     }

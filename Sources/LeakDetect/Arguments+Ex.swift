@@ -8,6 +8,7 @@
 import ArgumentParser
 import Foundation
 import SKClient
+import PathKit
 
 extension Reporter: ExpressibleByArgument {
     static let all: String = Reporter
@@ -24,10 +25,37 @@ public enum TargetType: String, CaseIterable, ExpressibleByArgument {
         .map(\.rawValue)
         .joined(separator: "|")
 
+    case auto
     case xcodeproj
     case xcworkspace
     case singleFile
     case spm
+    
+    func detect(_ path: String) -> TargetType {
+        guard case .auto = self else {
+            return self
+        }
+        
+        if path.hasSuffix(".xcodeproj") {
+            return .xcodeproj
+        }
+        
+        if path.hasSuffix(".xcworkspace") {
+            return .xcworkspace
+        }
+        
+        if path.hasSuffix(".swift") && !path.hasSuffix("Package.swift") {
+            return .singleFile
+        }
+        
+        let path = Path(path)
+        let package = path + "Package.swift"
+        if path.isDirectory && package.exists {
+            return .spm
+        }
+        
+        return .singleFile
+    }
 }
 
 enum Mode: String, CaseIterable, ExpressibleByArgument {

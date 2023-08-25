@@ -64,8 +64,4 @@ leakDetect \
     --module LeakDetectorDemo \
     --targetType xcworkspace \
     --file LeakDetectorDemo.xcworkspace
-
-# Mode:
-# * assign: detecting assign instance function `x = self.func` or `y(self.func)`.
-# * capture: detecting capture instance in closure.
 ```
