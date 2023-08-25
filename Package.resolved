@@ -19,6 +19,24 @@
       }
     },
     {
+      "identity" : "logger",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/shibapm/Logger",
+      "state" : {
+        "revision" : "53c3ecca5abe8cf46697e33901ee774236d94cce",
+        "version" : "0.2.3"
+      }
+    },
+    {
+      "identity" : "octokit.swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nerdishbynature/octokit.swift",
+      "state" : {
+        "revision" : "f762f1566f7cd0e683b9329f169c28ab6ef993cc",
+        "version" : "0.12.0"
+      }
+    },
+    {
       "identity" : "pathkit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kylef/PathKit",
@@ -37,6 +55,15 @@
       }
     },
     {
+      "identity" : "requestkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nerdishbynature/RequestKit.git",
+      "state" : {
+        "revision" : "8b0258ea2a4345cbcac90509b764faacea12efb0",
+        "version" : "3.2.1"
+      }
+    },
+    {
       "identity" : "sourcekitten",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/jpsim/SourceKitten",
@@ -52,6 +79,15 @@
       "state" : {
         "revision" : "26cc5e9ae0947092c7139ef7ba612e34646086c7",
         "version" : "0.10.1"
+      }
+    },
+    {
+      "identity" : "swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/danger/swift",
+      "state" : {
+        "revision" : "d246105c3b08ba9e8bf7d9023df36cbf6ceab0bb",
+        "version" : "3.17.1"
       }
     },
     {
@@ -86,8 +122,17 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/yume190/TypeFill",
       "state" : {
-        "revision" : "4db66dfdb227ad99827e3bb1aa1af300d1050802",
-        "version" : "0.4.7"
+        "revision" : "ad767672acf715a47a3aa94f24842d8976f9869a",
+        "version" : "0.4.8"
+      }
+    },
+    {
+      "identity" : "version",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mxcl/Version",
+      "state" : {
+        "revision" : "1fe824b80d89201652e7eca7c9252269a1d85e25",
+        "version" : "2.0.1"
       }
     },
     {

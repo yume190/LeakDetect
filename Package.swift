@@ -10,6 +10,7 @@ let package = Package(
     ],
     products: [
         .executable(name: "leakDetect", targets: ["LeakDetect"]),
+        .library(name: "LeakDetectDangerPlugin", type: .dynamic, targets: ["LeakDetectDangerPlugin"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -21,7 +22,7 @@ let package = Package(
 
         .package(
             url: "https://github.com/yume190/TypeFill",
-            from: "0.4.7"
+            from: "0.4.8"
         ),
 //        .package(path: "../TypeFill"),
 
@@ -30,6 +31,7 @@ let package = Package(
         .package(url: "https://github.com/onevcat/Rainbow", from: "4.0.1"),
         .package(url: "https://github.com/zonble/HumanString.git", from: "0.1.1"),
         .package(url: "https://github.com/kylef/PathKit", from: "1.0.1"),
+        .package(url: "https://github.com/danger/swift", from: "3.17.1"),
         
     ],
     targets: [
@@ -56,6 +58,16 @@ let package = Package(
                 .product(name: "SKClient", package: "TypeFill"),
             ]
         ),
+        
+        .target(
+            name: "LeakDetectDangerPlugin",
+            dependencies: [
+                "LeakDetectKit",
+                .product(name: "Danger", package: "swift"),
+                .product(name: "SKClient", package: "TypeFill"),
+            ]
+        ),
+        
 
         // MARK: Tests
 
