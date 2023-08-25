@@ -1,4 +1,17 @@
-VERSION = 0.0.1
+VERSION = 0.0.4
+
+include CodeQL.mk
+
+.PHONY: githubRelease
+githubRelease:
+	sed -i '' 's|\(version: "\)\(.*\)\("\)|\1$(VERSION)\3|' Sources/LeakDetect/Command.swift
+
+	git add Sources/LeakDetect/Command.swift
+	git add Makefile
+
+	git commit -m "Update to $(VERSION)"
+	git tag $(VERSION)
+	git push origin $(VERSION)
 
 .PHONY: build
 build:
@@ -13,7 +26,10 @@ test: build
 .PHONY: release
 release:
 	@swift build -c release
-# @swift build -c release --arch arm64 --arch x86_64
+
+.PHONY: releaseAll
+releaseAll:
+	@swift build -c release --arch arm64 --arch x86_64
 
 .PHONY: install
 install: release

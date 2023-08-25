@@ -24,7 +24,7 @@ struct Command: ParsableCommand {
             --targetType xcworkspace \
             --file LeakDetectorDemo.xcworkspace
         """,
-        version: "0.0.3"
+        version: "0.0.4"
     )
 
     @Flag(name: [.customLong("verbose", withSingleDash: false), .short], help: "print inpect time")
