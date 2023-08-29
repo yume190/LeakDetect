@@ -10,18 +10,17 @@ import PathKit
 import SKClient
 
 /// [Context](https://docs.github.com/en/actions/learn-github-actions/contexts#github-context)
-/// ${{github.repository}}
 private enum GihubActionEnv: String {
     /// commit
-    /// "sha": "c27d339ee6075c1f744c5d4b200f7901aad2c369"
+    /// ${{github.event.after}}
     case sha
     /// "repository": "octocat/hello-world",
     case repository
 
-    /// -H "Authorization: token ghp_KaX8xxxx" \
+    /// ${{ secrets.GITHUB_TOKEN }}
     case auth
 
-    /// ${{ github.event.issue.number }}
+    /// ${{ github.event.number }}
     case issue
 
     private static let processInfo: ProcessInfo = .init()
@@ -91,6 +90,7 @@ class GithubAtionReporter {
 
     private func comment(code: CodeLocation) -> String {
         return """
+        
         \(path(code))
 
         > [!WARNING]
@@ -106,7 +106,7 @@ class GithubAtionReporter {
         <details>
         <summary>Found \(codes.count) potetial leaks.</summary>
         \(res)
-        <details/>
+        </details>
         """
     }
 
@@ -126,7 +126,6 @@ class GithubAtionReporter {
             "body": "\(comments)",
         ]
 
-        print("Req:", url.path)
         // Convert the dictionary to JSON data
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: requestBody, options: [])
@@ -136,14 +135,6 @@ class GithubAtionReporter {
         }
 
 
-        let (data, res) = try await URLSession.shared.data(for: request)
-        if (res as? HTTPURLResponse)?.statusCode == 200 {
-            print("sync to github [o]")
-        } else {
-            print("sync to github [x]")
-        }
-        
-        print("Body:", String(data: data, encoding: .utf8) ?? "none")
-        print("Res:", res)
+        _ = try await URLSession.shared.data(for: request)
     }
 }
