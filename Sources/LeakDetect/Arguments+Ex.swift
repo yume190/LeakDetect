@@ -11,10 +11,23 @@ import SKClient
 import PathKit
 
 extension Reporter: ExpressibleByArgument {
-    static let all: String = Reporter
-        .allCases
-        .map(\.rawValue)
-        .joined(separator: "|")
+    public init?(argument: String) {
+        
+        switch argument {
+        case "xcode":
+            self = .xcode
+        case "vscode":
+            self = .vscode
+        default:
+            self = .custom { _, _ in }
+        }
+    }
+    public var defaultValueDescription: String { "vscode" }
+    
+    public static var allValueStrings: [String] { ["xcode", "vscode", "custom"] }
+    public static var defaultCompletionKind: CompletionKind { .list(allValueStrings) }
+    
+    static let all: String = "xcode|vscode|custom"
 }
 
 extension SDK: ExpressibleByArgument {}

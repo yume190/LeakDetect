@@ -21,7 +21,7 @@ let package = Package(
 
         .package(
             url: "https://github.com/yume190/TypeFill",
-            from: "0.4.7"
+            from: "0.4.9"
         ),
 //        .package(path: "../TypeFill"),
 

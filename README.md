@@ -15,28 +15,26 @@ mint install yume190/LeakDetect
 
 ``` bash
 leakDetect \
-    --moduleName "SCHEME NAME" \
-    --targetType xcworkspace \
-    --file Sample.xcworkspace 
-    
+    --module "SCHEME NAME" \
+    --file Sample.xcworkspace
+
 leakDetect \
-    --moduleName "SCHEME NAME" \
-    --targetType xcodeproj \
+    --module "SCHEME NAME" \
     --file Sample.xcodeproj
 ```
 
 #### [Assign](LeakDetectKit/Assign/AssignClosureVisitor.swift)
 
 Detect assign instance function.
- 
 1. `x = self.func`
-  [o] Check function is `instance function`.
-  [x] Check self is `struct`
-2. `y(self.func)`
-  [o] Check function is `instance function`.
-  [x] Check parameter is `escaping closure`
+   - [x] Check function is `instance function`.
+   - [ ] Check self is `struct`
 
-see [Don't use this syntax!](https://www.youtube.com/watch?v=mzsz_Tit1HA). 
+2. `y(self.func)`
+   - [x] Check function is `instance function`.
+   - [ ] Check parameter is `escaping closure`
+
+see [Don't use this syntax!](https://www.youtube.com/watch?v=mzsz_Tit1HA).
 
 ```swift
 func escape(block: @escaping () -> Void) {}
@@ -62,6 +60,5 @@ cd LeakDetector
 
 leakDetect \
     --module LeakDetectorDemo \
-    --targetType xcworkspace \
     --file LeakDetectorDemo.xcworkspace
 ```

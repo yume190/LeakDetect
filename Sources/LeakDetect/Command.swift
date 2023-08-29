@@ -11,7 +11,7 @@ import LeakDetectKit
 import SKClient
 import SourceKittenFramework
 
-struct Command: ParsableCommand {
+struct Command: AsyncParsableCommand {
     static var configuration: CommandConfiguration = .init(
         abstract: "A Tool to Detect Potential Leaks",
         discussion: """
@@ -19,15 +19,12 @@ struct Command: ParsableCommand {
         git clone https://github.com/antranapp/LeakDetector
         cd LeakDetector
 
-        leakDetect \
-            --module LeakDetectorDemo \
-            --targetType xcworkspace \
-            --file LeakDetectorDemo.xcworkspace
+        leakDetect --module LeakDetectorDemo --file LeakDetectorDemo.xcworkspace
         """,
         version: "0.0.4"
     )
 
-    @Flag(name: [.customLong("verbose", withSingleDash: false), .short], help: "print inpect time")
+    @Flag(name: [.customLong("verbose", withSingleDash: false), .short], help: "verbose")
     var verbose: Bool = false
 
     @Option(name: [.customLong("reporter", withSingleDash: false)], help: "[\(Reporter.all)]")
@@ -36,23 +33,30 @@ struct Command: ParsableCommand {
     @Option(name: [.customLong("sdk", withSingleDash: false)], help: "[\(SDK.all)]")
     var sdk: SDK = .iphonesimulator
 
-    @Option(name: [.customLong("targetType", withSingleDash: false)], help: "[\(Reporter.all)]")
+    @Option(name: [.customLong("targetType", withSingleDash: false)], help: "[\(TargetType.all)]")
     var targetType: TargetType = .auto
 
-    @Option(name: [.customLong("module", withSingleDash: false)], help: "Name of Swift module to document (can't be used with `--single-file`)")
+    @Option(name: [.customLong("module", withSingleDash: false)], help: "Name of Swift module to document (can't be used with `--targetType singleFile`)")
     var moduleName = ""
 
-    @Option(name: [.customLong("file", withSingleDash: false)], help: "xcworkspace/xcproject/xxx.swift")
+    @Option(name: [.customLong("file", withSingleDash: false)], help: "xxx.xcworkspace/xxx.xcodeproj/xxx.swift")
     var file: String
     var path: String {
         URL(fileURLWithPath: file).path
     }
     
+    var base: String {
+        let _base = path.removeSuffix(file)
+        
+        if _base.isEmpty {
+            return URL(fileURLWithPath: file).deletingLastPathComponent().path
+        }  else {
+            return _base
+        }
+    }
 
     @Argument(help: "Arguments passed to `xcodebuild` or `swift build`")
     var arguments: [String] = []
-
-    typealias LeakCount = Int
 
     private var module: Module? {
         let moduleName = self.moduleName.isEmpty ? nil : self.moduleName
@@ -82,11 +86,17 @@ struct Command: ParsableCommand {
             return nil
         }
     }
-
-    mutating func run() throws {
+    mutating func run() async throws {
+        let githubAction = GithubAtionReporter(base: base)
+        let newReporter = Reporter.custom { [weak githubAction] location, _ in
+            githubAction?.add(location)
+        }
+        
         if case .singleFile = targetType.detect(path) {
             try SingleFilePipeline(path, arguments + [path] + sdk.pathArgs)
-                .detect(reporter, verbose)
+                .detect(newReporter, verbose)
+            
+            try await githubAction?.call()
             return
         }
         
@@ -95,6 +105,25 @@ struct Command: ParsableCommand {
             return
         }
 
-        try Pipeline.detect(module, reporter, verbose)
+        try Pipeline.detect(module, newReporter, verbose)
+        try await githubAction?.call()
+    }
+}
+
+extension String {
+    func removeSuffix(_ text: String) -> String {
+        if self.hasSuffix(text) {
+            return String(self.dropLast(text.count))
+        } else {
+            return self
+        }
+    }
+    
+    func removePrefix(_ text: String) -> String {
+        if self.hasPrefix(text) {
+            return String(self.dropFirst(text.count))
+        } else {
+            return self
+        }
     }
 }

@@ -86,8 +86,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/yume190/TypeFill",
       "state" : {
-        "revision" : "4db66dfdb227ad99827e3bb1aa1af300d1050802",
-        "version" : "0.4.7"
+        "revision" : "84cc8baa4370ab49535a8b6f0e6eeb9257432c34",
+        "version" : "0.4.9"
       }
     },
     {

@@ -25,7 +25,11 @@ test: build
 
 .PHONY: release
 release:
-	@swift build -c release
+	@swift build -c release --arch x86_64
+
+.PHONY: releaseArm
+releaseArm:
+	@swift build -c release --arch arm64
 
 .PHONY: releaseAll
 releaseAll:
@@ -60,3 +64,11 @@ single:
 	leakDetect \
 		--sdk macosx \
 		--file fixture/temp.swift
+
+.PHONY: proj
+proj:
+ 	# git clone https://github.com/antranapp/LeakDetector
+
+	leakDetect \
+		--module LeakDetectorDemo \
+		--file LeakDetector/LeakDetectorDemo.xcworkspace
