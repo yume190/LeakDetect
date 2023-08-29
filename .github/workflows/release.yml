@@ -1,0 +1,26 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build-release:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Build Binaries
+      run: |
+        swift build -c release --arch arm64 --arch x86_64
+
+    - name: Create and Upload Release
+      uses: softprops/action-gh-release@v0.1.15
+      with:
+        files: |
+          .build/apple/Products/Release/leakDetect
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
