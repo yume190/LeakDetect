@@ -17,15 +17,15 @@ private enum GihubActionEnv: String {
     case sha
     /// "repository": "octocat/hello-world",
     case repository
-    
+
     /// -H "Authorization: token ghp_KaX8xxxx" \
     case auth
-    
+
     /// ${{ github.event.issue.number }}
     case issue
-    
+
     private static let processInfo: ProcessInfo = .init()
-    
+
     public var value: String? {
         return Self.processInfo.environment[rawValue]
     }
@@ -37,10 +37,10 @@ class GithubAtionReporter {
         guard let repo = GihubActionEnv.repository.value else { return nil }
         guard let auth = GihubActionEnv.auth.value else { return nil }
         guard let issue = GihubActionEnv.issue.value else { return nil }
-        
+
         self.init(base: base, repo: repo, sha: sha, issue: issue, auth: auth)
     }
-    
+
     init(base: String, repo: String, sha: String, issue: String, auth: String) {
         self.base = base
         self.repo = repo
@@ -48,7 +48,7 @@ class GithubAtionReporter {
         self.issue = issue
         self.auth = auth
     }
-    
+
     let base: String
     private func rPath(_ code: CodeLocation) -> String {
         code.path
@@ -59,13 +59,13 @@ class GithubAtionReporter {
     let repo: String
     let sha: String
     let issue: String
-    
+
     let auth: String
     private(set) var codes: [CodeLocation] = []
     func add(_ code: CodeLocation) {
         codes.append(code)
     }
-    
+
     /// base: https://github.com/
     /// repo: yume190/LeakDetect
     ///       blob
@@ -77,18 +77,18 @@ class GithubAtionReporter {
             guard let line = code.location.line else {
                 return ""
             }
-            
+
             let min = max(0, line - 2)
             let max = min + 4
             /// #L11-L15
             return "#L\(min)-L\(max)"
         }
-        
+
         return """
         https://github.com/\(repo)/blob/\(sha)/\(rPath(code))\(lines(code))
         """
     }
-    
+
     private func comment(code: CodeLocation) -> String {
         return """
         \(path(code))
@@ -99,7 +99,7 @@ class GithubAtionReporter {
         > Target: \(code.syntax?.withoutTrivia().description ?? "")
         """
     }
-    
+
     private var comments: String {
         let res = codes.map(comment).joined(separator: "\n")
         return """
@@ -109,7 +109,7 @@ class GithubAtionReporter {
         <details/>
         """
     }
-    
+
     /// https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#create-an-issue-comment
     func call() async throws {
         let url = URL(string: "https://api.github.com/repos/\(repo)/issues/\(issue)/comments")!
@@ -121,15 +121,12 @@ class GithubAtionReporter {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(auth)", forHTTPHeaderField: "Authorization")
 
-//        let body = """
-//        {"body":"\(comments)"}
-//        """
-//        request.httpBody = body.data(using: .utf8)
         // Create a dictionary for the request body
         let requestBody: [String: Any] = [
             "body": "\(comments)",
         ]
 
+        print("Req:", url.path)
         // Convert the dictionary to JSON data
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: requestBody, options: [])
@@ -138,12 +135,15 @@ class GithubAtionReporter {
             print("Error creating JSON data: \(error)")
         }
 
-        
-        let (_, res) = try await URLSession.shared.data(for: request)
+
+        let (data, res) = try await URLSession.shared.data(for: request)
         if (res as? HTTPURLResponse)?.statusCode == 200 {
             print("sync to github [o]")
         } else {
             print("sync to github [x]")
         }
+        
+        print("Body:", String(data: data, encoding: .utf8) ?? "none")
+        print("Res:", res)
     }
 }

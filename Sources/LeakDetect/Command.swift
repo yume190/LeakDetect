@@ -86,15 +86,28 @@ struct Command: AsyncParsableCommand {
             return nil
         }
     }
-    mutating func run() async throws {
-        let githubAction = GithubAtionReporter(base: base)
-        let newReporter = Reporter.custom { [weak githubAction] location, _ in
-            githubAction?.add(location)
+    
+    private func newReporter() -> (Reporter, GithubAtionReporter?) {
+        switch reporter {
+        case .xcode: fallthrough
+        case .vscode:
+            return (reporter, nil)
+        case .custom:
+            let githubAction = GithubAtionReporter(base: base)
+            let reporter = Reporter.custom { [weak githubAction] location, _ in
+                githubAction?.add(location)
+            }
+            return (reporter, githubAction)
         }
+    }
+    
+    mutating func run() async throws {
+        
+        let (reporter, githubAction) = newReporter()
         
         if case .singleFile = targetType.detect(path) {
             try SingleFilePipeline(path, arguments + [path] + sdk.pathArgs)
-                .detect(newReporter, verbose)
+                .detect(reporter, verbose)
             
             try await githubAction?.call()
             return
@@ -105,7 +118,7 @@ struct Command: AsyncParsableCommand {
             return
         }
 
-        try Pipeline.detect(module, newReporter, verbose)
+        try Pipeline.detect(module, reporter, verbose)
         try await githubAction?.call()
     }
 }
