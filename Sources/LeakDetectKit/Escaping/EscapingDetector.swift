@@ -45,6 +45,10 @@ public enum EscapingDetector {
     public static func detect(code: String, index: Int) -> Bool {
         return (try? _detect(code: code)[index]) ?? false
     }
+    
+    public static func detect(code: String, name: String) -> Bool {
+        return (try? _detect(code: code)[name]) ?? false
+    }
 
     public static func detectLast(code: String) -> Bool {
         return (try? _detect(code: code).escape.last) ?? false
