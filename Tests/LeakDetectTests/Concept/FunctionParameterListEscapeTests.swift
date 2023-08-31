@@ -17,10 +17,10 @@ final class FunctionParameterListEscapeTests: XCTestCase {
     private let parenthesis = "(((@escaping (Int) -> ()) -> ()), Int) -> ()"
     
     private let a = """
-    @inlinable func map<T>(_ transform: @escaping (Element) throws -> T) rethrows -> [T]")
+    @inlinable func map<T>(_ transform: @escaping (Element) throws -> T) rethrows -> [T]
     """
     private let b = """
-    @inlinable func map<T>(_ transform: (Element) throws -> T) rethrows -> [T]")
+    @inlinable func map<T>(_ transform: (Element) throws -> T) rethrows -> [T]
     """
         
     func testNormal0() throws {
