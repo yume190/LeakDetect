@@ -123,20 +123,3 @@ struct Command: AsyncParsableCommand {
     }
 }
 
-extension String {
-    func removeSuffix(_ text: String) -> String {
-        if self.hasSuffix(text) {
-            return String(self.dropLast(text.count))
-        } else {
-            return self
-        }
-    }
-    
-    func removePrefix(_ text: String) -> String {
-        if self.hasPrefix(text) {
-            return String(self.dropFirst(text.count))
-        } else {
-            return self
-        }
-    }
-}
