@@ -20,9 +20,9 @@ extension Class_Obj_GlobalFunction_LeakTests {
     final func testNoLeak() throws {
         let code = """
         func leak() {
-            let a = A()
+            let c = C()
             nonescape {
-                print(a.a)
+                print(c.a)
             }
         }
         """
@@ -33,9 +33,9 @@ extension Class_Obj_GlobalFunction_LeakTests {
     final func testLeak() throws {
         let code = """
         func leak() {
-            let a = A()
+            let c = C()
             escape {
-                print(a.a)
+                print(c.a)
             }
         }
         """
@@ -50,11 +50,11 @@ extension Class_Obj_GlobalFunction_LeakTests {
     final func testNested1() throws {
         let code = """
         func leak() {
-            let a = A()
+            let c = C()
             escape {
-                print(a.a)
+                print(c.a)
                 escape {
-                    print(a.a)
+                    print(c.a)
                 }
             }
         }
@@ -66,11 +66,11 @@ extension Class_Obj_GlobalFunction_LeakTests {
     final func testNested2() throws {
         let code = """
         func leak() {
-            let a = A()
+            let c = C()
             nonescape {
-                print(a.a)
+                print(c.a)
                 nonescape {
-                    print(a.a)
+                    print(c.a)
                 }
             }
         }
@@ -83,27 +83,27 @@ extension Class_Obj_GlobalFunction_LeakTests {
     final func testNested3() throws {
         let code = """
         func leak() {
-            let a = A()
+            let c = C()
             escape {
-                print(a.a)
+                print(c.a)
                 nonescape {
-                    print(a.a)
+                    print(c.a)
                 }
             }
         }
         """
 
-        try XCTAssertEqual(Self.count(code), 1)
+        try XCTAssertEqual(Self.count(code), 2)
     }
 
     final func testNested4() throws {
         let code = """
         func leak() {
-            let a = A()
+            let c = C()
             nonescape {
-                print(a.a)
+                print(c.a)
                 escape {
-                    print(a.a)
+                    print(c.a)
                 }
             }
         }
@@ -115,9 +115,9 @@ extension Class_Obj_GlobalFunction_LeakTests {
     final func testNestedSpecial() throws {
         let code = """
         func leak() {
-            let a = A()
+            let c = C()
             escape {
-                escape { [weak a] in
+                escape { [weak c] in
                 }
             }
         }
@@ -133,9 +133,9 @@ extension Class_Obj_GlobalFunction_LeakTests {
     final func testAssign1() throws {
         let code = """
         func leak() {
-            let a = A()
+            let c = C()
             escape {
-                a.a = 1
+                c.a = 1
             }
         }
         """
@@ -146,9 +146,9 @@ extension Class_Obj_GlobalFunction_LeakTests {
     final func testAssign2() throws {
         let code = """
         func leak() {
-            let a = A()
+            let c = C()
             escape {
-                let a = a.a
+                let a = c.a
             }
         }
         """

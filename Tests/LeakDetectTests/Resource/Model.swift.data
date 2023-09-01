@@ -7,22 +7,22 @@
 
 import Foundation
 
-class A {
+class C {
     var a = 1
     var b = "2"
 }
 
-struct B {
+struct S {
     var a = 1
     var b = "2"
 }
 
-enum C {
+enum E {
     var a: Int {1}
     var b: String {"2"}
 }
 
-protocol D {
+protocol P {
     var a: Int {get}
     var b: String {get}
 }

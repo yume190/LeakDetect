@@ -17,7 +17,7 @@ final class ClassEx_Self_LeakTests: _LeakTests {}
 extension ClassEx_Self_LeakTests {
     final func testNoLeak() throws {
         let code = """
-        extension A {
+        extension C {
             func leak() {
                 nonescape {
                     print(self.a)
@@ -31,7 +31,7 @@ extension ClassEx_Self_LeakTests {
     
     final func testLeak() throws {
         let code = """
-        extension A {
+        extension C {
             func leak() {
                 escape {
                     print(self.a)
@@ -49,7 +49,7 @@ extension ClassEx_Self_LeakTests {
 extension ClassEx_Self_LeakTests {
     final func testNested1() throws {
         let code = """
-        extension A {
+        extension C {
             func leak() {
                 escape {
                     print(self.a)
@@ -66,7 +66,7 @@ extension ClassEx_Self_LeakTests {
     
     final func testNested2() throws {
         let code = """
-        extension A {
+        extension C {
             func leak() {
                 nonescape {
                     print(self.a)
@@ -84,7 +84,7 @@ extension ClassEx_Self_LeakTests {
     /// this case can solve by `escape { [self] in ... }`
     final func testNested3() throws {
         let code = """
-        extension A {
+        extension C {
             func leak() {
                 escape {
                     print(self.a)
@@ -96,12 +96,12 @@ extension ClassEx_Self_LeakTests {
         }
         """
         
-        try XCTAssertEqual(Self.count(code), 1)
+        try XCTAssertEqual(Self.count(code), 2)
     }
     
     final func testNested4() throws {
         let code = """
-        extension A {
+        extension C {
             func leak() {
                 nonescape {
                     print(self.a)
@@ -118,7 +118,7 @@ extension ClassEx_Self_LeakTests {
     
     final func testNestedSpecial() throws {
         let code = """
-        extension A {
+        extension C {
             func leak() {
                 escape {
                     escape { [weak self] in
@@ -137,7 +137,7 @@ extension ClassEx_Self_LeakTests {
 extension ClassEx_Self_LeakTests {
     final func testAssign1() throws {
         let code = """
-        extension A {
+        extension C {
             func leak() {
                 escape {
                     self.a = 1
@@ -151,7 +151,7 @@ extension ClassEx_Self_LeakTests {
     
     final func testAssign2() throws {
         let code = """
-        extension A {
+        extension C {
             func leak() {
                 escape {
                     let a = self.a

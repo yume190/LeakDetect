@@ -38,11 +38,11 @@ final class CaptureRewriterTests: XCTestCase {
 final class RewriterLeakTests: _LeakTests {
     final func testNested() throws {
         let code = """
-        extension A {
+        extension C {
             func leak() {
-                let a = A()
+                let c = C()
                 escape {
-                    escape { [weak a] in
+                    escape { [weak c] in
                     }
                 }
             }

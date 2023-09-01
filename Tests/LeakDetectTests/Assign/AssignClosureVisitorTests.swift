@@ -1,5 +1,5 @@
 //
-//  AssignClosureVisitor.swift
+//  AssignClosureVisitorTests.swift
 //  TypeFillTests
 //
 //  Created by Yume on 2021/10/20.
@@ -10,13 +10,13 @@ import Foundation
 import SwiftSyntax
 import XCTest
 
-final class AssignClosureTests: XCTestCase {
+final class AssignClosureVisitorTests: XCTestCase {
     func testNormal() throws {
         let path: String = resource(file: "AssignClosure.swift.data")
         let client = try SKClient(path: path)
-        let visitor = AssignClosureVisitor(viewMode: .sourceAccurate)
+        let visitor = AssignClosureVisitor(client: client)
         visitor.walk(client.sourceFile)
-        let results = visitor._detect(client)
+        let results = visitor.results.map(\.location)
 
         let espect = [
             CodeLocation(path: path, location: SourceLocation(offset: 171, converter: client.converter)),

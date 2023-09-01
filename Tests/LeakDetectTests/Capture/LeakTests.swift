@@ -18,31 +18,45 @@ import XCTest
 class _LeakTests: XCTestCase {
     /// escape function
     /// nonescape function
-    static let _functions = resource(file: "Leak2.swift.data")
-    static let _class = resource(file: "Structures.swift.data")
-    static let _load = [_functions, _class]
+    static let _functions = resource(file: "Functions.swift.data")
+    static let _model = resource(file: "Model.swift.data")
+    static let _load = [_functions, _model]
 
-    static func detect(_ code: String) throws -> [IdentifierExprSyntax] {
-
+    static func detect(_ code: String, _ sdk: SDK = .macosx) throws -> [IdentifierExprSyntax] {
+//        let pipeline = SingleFilePipeline(
+//            "code: /temp.swift",
+//            code,
+//            SDK.macosx.pathArgs + Self._load + ["code: /temp.swift"]
+//        )
+//        pipeline.detect(.vscode, false)
+        
         let source = try SyntaxParser.parse(source: code)
         let rewriter = CaptureListRewriter()
         let newSource = rewriter.visit(source)
         let newCode = newSource.description
-        let client = SKClient(code: newCode, arguments: SDK.macosx.pathArgs + Self._load)
-
-//        let client = SKClient(code: code, arguments: SDK.macosx.pathArgs + Self._load)
-
-        let visitor = DeclsVisitor(viewMode: .sourceAccurate)
-        visitor.customWalk(client.sourceFile)
-
+        var args = sdk.pathArgs + Self._load
+        if sdk == .iphoneos {
+            args += [
+                "-target",
+                "arm64-apple-ios11.0",
+            ]
+        }
+        
+        let client = SKClient(code: newCode, arguments: args)
         try client.editorOpen()
-        let ids = try visitor.detect(client, .vscode, false)
+
+        let visitor = DeclsVisitor(client: client)
+        visitor.customWalk(client.sourceFile)
+        
+        let ids = try visitor.detect(.vscode, false)
         try client.editorClose()
 
-        return ids
+        return ids.compactMap {
+            $0.location.syntax?.as(IdentifierExprSyntax.self)
+        }
     }
 
-    static func count(_ code: String) throws -> Int {
-        return try detect(code).count
+    static func count(_ code: String, _ sdk: SDK = .macosx) throws -> Int {
+        return try detect(code, sdk).count
     }
 }

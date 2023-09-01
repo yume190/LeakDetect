@@ -101,7 +101,7 @@ extension Class_Self_LeakTests {
         }
         """
         
-        try XCTAssertEqual(Self.count(code), 1)
+        try XCTAssertEqual(Self.count(code), 2)
     }
     
     final func testNested4() throws {
