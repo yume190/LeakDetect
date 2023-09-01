@@ -112,6 +112,8 @@ class GithubAtionReporter {
 
     /// https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#create-an-issue-comment
     func call() async throws {
+        guard issue != "" else { return }
+        
         let url = URL(string: "https://api.github.com/repos/\(repo)/issues/\(issue)/comments")!
 
         // Create the URLRequest
