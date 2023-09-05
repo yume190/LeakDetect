@@ -1,0 +1,76 @@
+name: Leak Detect
+description: Detect Potential Leaks.
+inputs:
+  sha:
+    description: 'The commit you test'
+    required: true
+    default: ${{github.event.after}}
+
+  repo:
+    description: 'The repo you test'
+    required: true
+    default: ${{github.repository}}
+
+  token:
+    description: 'Github token, ${{ secrets.GITHUB_TOKEN }}'
+    required: true
+
+  issue:
+    description: 'Github issue id'
+    required: true
+    default: ${{github.event.number}}
+
+  sdk:
+    description: '[macosx|appletvos|watchsimulator|iphonesimulator|appletvsimulator|iphoneos|watchos]'
+    required: true
+    default: ''
+
+  module:
+    description: 'XCode Scheme Name/SPM Target name'
+    required: true
+    default: ''
+
+  file:
+    description: 'xxx.xcworkspace/xxx.xcodeproj/xxx.swift'
+    required: true
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Download LeakDectect
+      shell: bash
+      run: |
+        # TEMP_DIR=$(mktemp -d)
+        curl -sSL \
+          "https://github.com/yume190/LeakDetect/releases/download/0.0.4.4/leakDetect" \
+          -o leakDetect
+        chmod +x leakDetect
+
+    - name: Detect Single File
+      if: ${{ inputs.sdk != '' }}
+      env:
+          sha: ${{ inputs.sha }}
+          repository: ${{ inputs.repo }}
+          auth: ${{ inputs.token }}
+          issue: ${{ inputs.issue }}
+      shell: bash
+      run: |
+        ./leakDetect \
+          --reporter custom \
+          --sdk ${{inputs.sdk}} \
+          --file ${{inputs.file}}
+
+    - name: Detect Module
+      if: ${{ inputs.module != '' }}
+      env:
+          sha: ${{ inputs.sha }}
+          repository: ${{ inputs.repo }}
+          auth: ${{ inputs.token }}
+          issue: ${{ inputs.issue }}
+      shell: bash
+      run: |
+        ./leakDetect \
+          --reporter custom \
+          --module ${{inputs.module}} \
+          --file ${{inputs.file}}
