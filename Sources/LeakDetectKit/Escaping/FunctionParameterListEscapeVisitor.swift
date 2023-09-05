@@ -47,9 +47,17 @@ final class FunctionParameterListEscapeVisitor: SyntaxVisitor {
         return .skipChildren
     }
     
-    /// (((@escaping (Int) -> ()) -> ()), Int) -> ()
+    /// Non Official Input:
+    ///     (((@escaping (Int) -> ()) -> ()), Int) -> ()
     override func visit(_ node: SequenceExprSyntax) -> SyntaxVisitorContinueKind {
+        /// SKIP:
+        ///     .CellRegistration = UICollectionView.CellRegistration<Cell, Product>
+        /// prefix `.` will crash
+        if node.description.hasPrefix(".") {
+            return .skipChildren
+        }
         let target = "typealias A = \(node.description)"
+        
         if let source = try? SyntaxParser.parse(source: target) {
             walk(source)
         }
@@ -58,6 +66,9 @@ final class FunctionParameterListEscapeVisitor: SyntaxVisitor {
     }
     
     /// typealias A = (((@escaping (Int) -> ()) -> ()), Int) -> ()
+    ///
+    /// input:
+    ///     (for: __C.UIViewController) -> ()
     override func visit(_ node: FunctionTypeSyntax) -> SyntaxVisitorContinueKind {
         let args: [TupleTypeElementListSyntax.Element] = node.arguments.map { $0 }
         

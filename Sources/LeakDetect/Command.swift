@@ -63,7 +63,7 @@ struct Command: AsyncParsableCommand {
         
         switch targetType.detect(path) {
         case .spm:
-            return Module(spmArguments: arguments, spmName: moduleName)
+            return Module(spmArguments: arguments, spmName: moduleName, inPath: path)
         case .singleFile:
             return nil
         case .xcodeproj:
@@ -102,14 +102,14 @@ struct Command: AsyncParsableCommand {
     }
     
     mutating func run() async throws {
-        
         let (reporter, githubAction) = newReporter()
         
         if case .singleFile = targetType.detect(path) {
-            try SingleFilePipeline(path, arguments + [path] + sdk.pathArgs)
+            let results = try SingleFilePipeline(path, arguments + [path] + sdk.args)
                 .detect(reporter, verbose)
             
             try await githubAction?.call()
+            summery(results.count)
             return
         }
         
@@ -118,8 +118,17 @@ struct Command: AsyncParsableCommand {
             return
         }
 
-        try Pipeline.detect(module, reporter, verbose)
+        let count = try Pipeline.detect(module, reporter, verbose)
         try await githubAction?.call()
+        summery(count)
     }
 }
 
+
+fileprivate func summery(_ leakCount: Int) {
+    if leakCount == 0 {
+        print("Congratulation no leak found".green)
+    } else {
+        print("Found \(leakCount) leaks".red)
+    }
+}

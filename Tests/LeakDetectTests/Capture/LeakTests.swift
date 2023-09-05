@@ -34,13 +34,7 @@ class _LeakTests: XCTestCase {
         let rewriter = CaptureListRewriter()
         let newSource = rewriter.visit(source)
         let newCode = newSource.description
-        var args = sdk.pathArgs + Self._load
-        if sdk == .iphoneos {
-            args += [
-                "-target",
-                "arm64-apple-ios11.0",
-            ]
-        }
+        var args = sdk.args + Self._load
         
         let client = SKClient(code: newCode, arguments: args)
         try client.editorOpen()
@@ -48,7 +42,7 @@ class _LeakTests: XCTestCase {
         let visitor = DeclsVisitor(client: client)
         visitor.customWalk(client.sourceFile)
         
-        let ids = try visitor.detect(.vscode, false)
+        let ids = try visitor.detect()
         try client.editorClose()
 
         return ids.compactMap {

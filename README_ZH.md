@@ -14,47 +14,61 @@ mint install yume190/LeakDetect
 ## 使用方式
 
 ``` bash
-USAGE: command [--verbose] [--mode <mode>]
+leakDetect \
+    --module "SCHEME NAME" \
+    --file Sample.xcworkspace
+
+leakDetect \
+    --module "SCHEME NAME" \
+    --file Sample.xcodeproj
+
+# spm
+leakDetect \
+    --module TARGET_NAME \
+    --file .
+
+# file
+leakDetect \
+    --sdk macosx \
+    --file xxx.swift
 ```
 
-### 必要的環境參數
+#### [Assign](LeakDetectKit/Assign/AssignClosureVisitor.swift)
 
- * `PROJECT_TEMP_ROOT`/`PROJECT_PATH`
- * `TARGET_NAME`
+偵測 assign `instance function`.
+1. `x = self.func`
+   - [x] 檢查 function 是 `instance function`.
+   - [ ] 檢查 self 是 `struct`
 
-#### 參數範例
+2. `y(self.func)`
+   - [x] 檢查 function 是 `instance function`.
+   - [ ] 檢查參數是 `escaping closure`
 
- * `PROJECT_TEMP_ROOT`="/PATH_TO/DerivedData/TypeFill-abpidkqveyuylveyttvzvsspldln/Build/Intermediates.noindex"
- * `PROJECT_PATH`="/PATH_TO/xxx.xcodeproj" or "/PATH_TO/xxx.xcworkspace"
- * `TARGET_NAME`="Typefill"
-
-> PROJECT_PATH 相對路徑，雖然叫做 PROJECT_PATH 但是請填入以你主要開啟的檔案為主
-
-> PROJECT_TEMP_ROOT 絕對路徑
-
-### 模式(mode)
-
- * `assign`
- * `capture`
-
-#### Assign
-
-偵測 assign instance function `x = self.func` or `y(self.func)`.
 詳細請參考 [Don't use this syntax!](https://www.youtube.com/watch?v=mzsz_Tit1HA)
 
-|範例|Inspect|Leak|
-|:--|:-----:|:---:|
-|`let x = self.func`|X| |
-|`x = self.func`|func|O|
-|`x = func`|func|O|
-|`y(instanceF1, staticF, instanceF1)`|instanceF1, staticF, instanceF1|instanceF1, instanceF1|
+```swift
+func escape(block: @escaping () -> Void) {}
+class Temp {
+  func instanceFunction() {}
+  func leak() {
+    let x = self.instanceFunction
+    escape(block: self.instanceFunction)
+  }
+}
+```
 
 #### Capture
 
 偵測在 closure 內，被 capture 的 instance
 
-## 目前已知問題
+## Example
 
-> TARGET_NAME 請不要含有 `-` 或 `_`
+```sh
+# Example:
+git clone https://github.com/antranapp/LeakDetector
+cd LeakDetector
 
-> assign mode 會誤判 `button.addTarget(self, ...)` 的 self
+leakDetect \
+    --module LeakDetectorDemo \
+    --file LeakDetectorDemo.xcworkspace
+```

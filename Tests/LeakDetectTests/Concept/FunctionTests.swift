@@ -30,10 +30,7 @@ final class FunctionTests: XCTestCase {
         }
         """
         
-        let client = SKClient(code: code, arguments: SDK.iphoneos.pathArgs + [
-            "-target",
-            "arm64-apple-ios11.0",
-        ])
+        let client = SKClient(code: code, arguments: SDK.iphoneos.args)
         try prepare(client: client) { client in
 //            - value : "async(group:qos:flags:execute:)"
 //            - value : "source.lang.swift.ref.function.method.instance"

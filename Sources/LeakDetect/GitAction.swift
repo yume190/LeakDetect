@@ -62,6 +62,13 @@ class GithubAtionReporter {
     let auth: String
     private(set) var codes: [CodeLocation] = []
     func add(_ code: CodeLocation) {
+        if let line = code.location.line, let col = code.location.column {
+          let path = rPath(code)
+          let target = code.syntax?.withoutTrivia().description ?? "_"
+          print("""
+          ::warning file=\(path),line=\(line),col=\(col)::\(target)"
+          """)
+        }
         codes.append(code)
     }
 

@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftSyntax
+import SKClient
 
 /// only visit:
 ///     `class`, `struct`, `enum`, `extension`, `actor`, ~~`protocol`~~
@@ -14,30 +15,53 @@ import SwiftSyntax
 /// Source Code use ``customWalk`` to walk `static func` and `sub DeclsVisitor`
 public final class DeclsVisitor: SyntaxVisitor {
     private lazy var _subVisitors: [DeclsVisitor] = []
-    private let leak: LeakVisitor = .init(isInDecl: true, parentVisitor: nil)
+    public let client: SKClient
+    private let leak: LeakVisitor
+    public init(client: SKClient) {
+        self.client = client
+        self.leak = LeakVisitor(
+            context: .global(.file),
+            client: client,
+            parentVisitor: nil)
+        super.init(viewMode: .sourceAccurate)
+    }
+    
+    init(client: SKClient, _ global: LeakVisitor.Context.Global) {
+        self.client = client
+        self.leak = LeakVisitor(
+            context: .global(global),
+            client: client,
+            parentVisitor: nil)
+        super.init(viewMode: .sourceAccurate)
+    }
 
     override public final func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-        self.append(node.members)
+        let name = node.identifier.withoutTrivia().description
+        self.append(node.members, .class(name))
         return .skipChildren
     }
 
     override public final func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-        self.append(node.members)
+        let name = node.identifier.withoutTrivia().description
+        self.append(node.members, .class(name))
         return .skipChildren
     }
 
     override public final func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-        self.append(node.members)
+        let name = node.identifier.withoutTrivia().description
+        self.append(node.members, .class(name))
         return .skipChildren
     }
 
     override public final func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
-        self.append(node.members)
+        let name = node.extendedType.withoutTrivia().description
+        self.append(node.members, .class(name))
         return .skipChildren
     }
     
     override public final func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
-        self.append(node.members)
+        let name = node.identifier.withoutTrivia().description
+        self.append(node.members, .class(name))
         return .skipChildren
     }
 }
@@ -56,9 +80,25 @@ extension DeclsVisitor {
         self.leak.walk(node)
     }
 
-    private final func append<Syntax: SyntaxProtocol>(_ syntax: Syntax) {
-        let visitor = DeclsVisitor(viewMode: .sourceAccurate)
+    private final func append<Syntax: SyntaxProtocol>(_ syntax: Syntax, _ global: LeakVisitor.Context.Global) {
+        let visitor = DeclsVisitor(client: client, global)
         self._subVisitors.append(visitor)
         visitor.customWalk(syntax)
+    }
+}
+
+public extension DeclsVisitor {
+    func detect() throws -> [LeakResult] {
+        let all = leakVisitors
+
+        var results: [LeakVisitorResult] = []
+
+        for visitor in all {
+            results += try LeakVisitorResult.handleNormal(visitor)
+        }
+      
+        let newResults = results.map(\.result)
+      
+        return newResults
     }
 }

@@ -33,24 +33,26 @@ public enum EscapingDetector {
         return visitor.isEscape
     }
 
-    private static func _detect(code: String) throws -> FunctionParameterListEscapeVisitor {
+    private static func _detect(code: String) throws -> FunctionParameterListEscapeVisitor? {
         let target: String = code
 
-        let source: SourceFileSyntax = try SyntaxParser.parse(source: target)
-        let visitor = FunctionParameterListEscapeVisitor(viewMode: .sourceAccurate)
-        visitor.walk(source)
-        return visitor
+        if let source: SourceFileSyntax = try? SyntaxParser.parse(source: target) {
+            let visitor = FunctionParameterListEscapeVisitor(viewMode: .sourceAccurate)
+            visitor.walk(source)
+            return visitor
+        }
+        return nil
     }
 
     public static func detect(code: String, index: Int) -> Bool {
-        return (try? _detect(code: code)[index]) ?? false
+        return (try? _detect(code: code)?[index]) ?? false
     }
     
     public static func detect(code: String, name: String) -> Bool {
-        return (try? _detect(code: code)[name]) ?? false
+        return (try? _detect(code: code)?[name]) ?? false
     }
 
     public static func detectLast(code: String) -> Bool {
-        return (try? _detect(code: code).escape.last) ?? false
+        return (try? _detect(code: code)?.escape.last) ?? false
     }
 }

@@ -135,9 +135,7 @@ final class ReferenceTests: XCTestCase {
             print(a)
         }
         """
-        let args = SDK.macosx.pathArgs + [
-            file,
-        ]
+        let args = SDK.macosx.args + [file]
 
         let client = SKClient(code: code, arguments: args)
         try prepare(client: client) { client in

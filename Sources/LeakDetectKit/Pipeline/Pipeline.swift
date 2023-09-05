@@ -12,65 +12,78 @@ import SKClient
 import SourceKittenFramework
 import SwiftSyntaxParser
 
-fileprivate struct Visitors {
-    let assign = AssignClosureVisitor(viewMode: .sourceAccurate)
-    let capture = DeclsVisitor(viewMode: .sourceAccurate)
+struct Visitors {
+    let assign: AssignClosureVisitor
+    let capture: DeclsVisitor
     
-    func detect(
-        _ client: SKClient,
-        _ reporter: Reporter,
-        _ isVerbose: Bool
-    ) throws -> Int {
-        return try
-            assign.detectCount(client, reporter, isVerbose) +
-            capture.detectCount(client, reporter, isVerbose)
+    init(_ client: SKClient) {
+        self.assign = AssignClosureVisitor(client: client)
+        self.capture = DeclsVisitor(client: client)
     }
-}
-
-fileprivate func summery(_ leakCount: Int) {
-    if leakCount == 0 {
-        print("Congratulation no leak found".green)
-    } else {
-        print("Found \(leakCount) leaks".red)
+    
+    func detect() throws -> [LeakResult] {
+        return try
+            assign.detect() +
+            capture.detect()
     }
 }
 
 public struct SingleFilePipeline {
     public let filePath: String
+    public let code: String
     public let arguments: [String]
-    public init(_ filePath: String, _ arguments: [String]) {
+    public init(_ filePath: String, _ arguments: [String])  throws {
         self.filePath = filePath
+        self.arguments = arguments
+        
+        let path = Path(filePath)
+        self.code = try path.read(.utf8)
+    }
+    
+    public init(_ filePath: String, _ code: String, _ arguments: [String])  {
+        self.filePath = filePath
+        self.code = code
         self.arguments = arguments
     }
     
     /// change code
     private func stage1() throws -> SKClient {
-        let path = Path(filePath)
-        let code = try path.read(.utf8)
         let source = try SyntaxParser.parse(source: code)
         let rewriter = CaptureListRewriter()
         let newSource = rewriter.visit(source)
         let newCode = newSource.description
-        
         let client = SKClient(path: filePath, code: newCode, arguments: arguments)
         return client
     }
     
     /// visit all potential leaks
     private func state2(_ client: SKClient) -> Visitors {
-        let visitors = Visitors()
+        let visitors = Visitors(client)
         visitors.assign.walk(client.sourceFile)
         visitors.capture.customWalk(client.sourceFile)
         return visitors
     }
     
-    public func detect(_ reporter: Reporter, _ isVerbose: Bool) throws {
+    @discardableResult
+    public func detect(
+      _ reporter: Reporter,
+      _ isVerbose: Bool
+    ) throws -> [LeakResult] {
         let client = try stage1()
-        let visitors = state2(client)
         try client.editorOpen()
-        let count = try visitors.detect(client, reporter, isVerbose)
+        
+        let visitors = state2(client)
+        let results = try visitors.detect()
+        
         try client.editorClose()
-        summery(count)
+      
+        results.forEach { result in
+            reporter.report(result)
+            if isVerbose, !result.verbose.isEmpty {
+                print(result.verbose)
+            }
+        }
+        return results
     }
 }
 
@@ -97,28 +110,30 @@ public struct Pipeline {
     
     /// visit all potential leaks
     private func state2(_ client: SKClient) -> Visitors {
-        let visitors = Visitors()
+        let visitors = Visitors(client)
         visitors.assign.walk(client.sourceFile)
         visitors.capture.customWalk(client.sourceFile)
         return visitors
     }
     
-    private func detect(_ reporter: Reporter, _ isVerbose: Bool) throws -> Int {
+    private func detect() throws -> [LeakResult] {
         let client = try stage1()
-        let visitors = state2(client)
         try client.editorOpen()
-        let count = try visitors.detect(client, reporter, isVerbose)
+        
+        let visitors = state2(client)
+        let results = try visitors.detect()
+        
         try client.editorClose()
-        return count
+        return results
     }
     
+    @discardableResult
     public static func detect(
         _ module: Module,
         _ reporter: Reporter,
         _ isVerbose: Bool
-    ) throws {
+    ) throws -> Int {
         var leakCount = 0
-        defer { summery(leakCount) }
         let all: Int = module.sourceFiles.count
         for (index, filePath) in module.sourceFiles.sorted().enumerated() {
             if isVerbose {
@@ -126,9 +141,15 @@ public struct Pipeline {
                 print("\(title) \(filePath)")
             }
             let pipeline = Pipeline(filePath, module)
-            leakCount += try pipeline.detect(reporter, isVerbose)
+            let results = try pipeline.detect()
+            results.forEach { result in
+                reporter.report(result)
+                if isVerbose, !result.verbose.isEmpty {
+                    print(result.verbose)
+                }
+            }
+            leakCount += results.count
         }
-    }
-    
-    
+        return leakCount
+    }   
 }

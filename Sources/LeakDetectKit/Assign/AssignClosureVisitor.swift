@@ -6,14 +6,21 @@
 //
 
 import Foundation
-import SwiftSyntax
 import Rainbow
 import SKClient
+import SwiftSyntax
 
+// TODO: let x = obj.func
+// TODO: if let x = obj.func
 public final class AssignClosureVisitor: SyntaxVisitor {
-    
-    private(set) var results: [TokenSyntax] = []
-    
+    private(set) var results: [AssignClosureVisitorResult] = []
+    public let client: SKClient
+
+    public init(client: SKClient) {
+        self.client = client
+        super.init(viewMode: .sourceAccurate)
+    }
+
     /// self.a = self.abc
     ///
     /// expr self.a/a
@@ -22,25 +29,26 @@ public final class AssignClosureVisitor: SyntaxVisitor {
     ///     AssigmentExpr
     /// expr self.abc/abc
     ///     MemberAccessExpr/IdentifierExpr
-    public final override func visit(_ node: ExprListSyntax) -> SyntaxVisitorContinueKind {
-        self.find(node)
+    override public final func visit(_ node: ExprListSyntax) -> SyntaxVisitorContinueKind {
+        find(node)
         return .visitChildren
     }
-    
+
+    /// _ = `obj.func/instancFunc`
     @inline(__always)
     private final func find(_ node: ExprListSyntax) {
-        guard node.count == 3 else {return}
-        let exprs: [ExprListSyntax.Element] = node.map {$0}
-        
-        guard let _ = exprs[0].tokenSyntax else {return}
-        guard exprs[1].is(AssignmentExprSyntax.self) else {return}
-        
-        guard !exprs[2].is(FunctionCallExprSyntax.self) else {return}
-        guard let identifier: TokenSyntax = exprs[2].tokenSyntax else {return}
+        guard node.count == 3 else { return }
+        let exprs: [ExprListSyntax.Element] = node.map { $0 }
 
-        results.append(identifier)
+        guard let _ = exprs[0].tokenSyntax else { return }
+        guard exprs[1].is(AssignmentExprSyntax.self) else { return }
+
+        guard !exprs[2].is(FunctionCallExprSyntax.self) else { return }
+        guard let identifier: TokenSyntax = exprs[2].tokenSyntax else { return }
+
+        add(identifier, "Assign Instance Function To Variable")
     }
-    
+
     /// self.def(self.abc)
     ///
     /// calledExpression self.def/def
@@ -48,43 +56,40 @@ public final class AssignClosureVisitor: SyntaxVisitor {
     /// argumentList
     ///     TupleExprElementSyntax expression
     ///     TupleExprElementSyntax
-    public final override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-        self.find(node)
+    override public final func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+        find(node)
         return .visitChildren
     }
-    
-    /// TODO: check decl param is nonescaping
+
     @inline(__always)
     private final func find(_ node: FunctionCallExprSyntax) {
+        let info = client.functionInfo(node)
         for param in node.argumentList {
-            guard let identifier: TokenSyntax = param.expression.tokenSyntax else {continue}
-            results.append(identifier)
-        }
-    }
-    
-    public final func detectCount(_ client: SKClient, _ reporter: Reporter, _ isVerbose: Bool) throws -> Int {
-        
-        let locs = _detect(client)
-        
-        for loc in locs {
-            reporter.report(loc)
-            if isVerbose {
-                let info = try client(loc.location.offset)
-                print("""
-                    \("kind:".lightBlue) `\(info.kind?.rawValue ?? "")`
-                """)
+            guard let identifier: TokenSyntax = param.expression.tokenSyntax else { continue }
+            if let name = param.label?.text, let info {
+                if info.isEscape(name) {
+                    add(identifier,
+                        "Assign Instance Function To Escaping Closure Argument")
+                }
+            } else {
+                add(identifier, "Assign Instance Function To Argument")
             }
         }
-        
-        return locs.count
     }
-    
-    public final func _detect(_ client: SKClient) -> [CodeLocation] {
-        return results.compactMap { result in
-            guard let isRIF = try? client(result).isRefInstanceFunction, isRIF else {
-                return nil
-            }
-            return client(location: result)
+
+    private func add(_ token: TokenSyntax, _ reason: String) {
+        guard let isRIF = try? client(token).isRefInstanceFunction, isRIF else {
+            return
         }
+
+        results.append(AssignClosureVisitorResult(
+            location: client(location: token),
+            reason: reason))
+    }
+}
+
+public extension AssignClosureVisitor {
+    final func detect() -> [LeakResult] {
+        return results
     }
 }
