@@ -11,12 +11,12 @@
 ```swift
 func xxx() {
     let xxx = XXX()
-//      ^ <-------------¬
-    // closure          |
+//      ^ <─────────────┐
+    // closure          │
     { [weak self, yyy = xxx] _ in
 //          ^     ^
-//          |     └---- yyy
-//          └---- self
+//          │     └──── yyy
+//          └──── self
     }
 }
 ```
@@ -27,20 +27,20 @@ func xxx() {
 class XXX {
     func xxx() {
 //       ^
-//       └----¬
+//       └────┐
         print(self)
     }
 
     lazy var yyy: Int = {
 //           ^
-//           └¬
+//           └┐
         print(self)
         return 1
     }()
 
     var zzz: XXX {
 //               ^
-//            ⌜--⌟
+//            ┌──┘
         print(self)
     }
 }

@@ -10,8 +10,14 @@ import SwiftSyntax
 
 final public class CaptureListRewriter: SyntaxRewriter {
     struct Info {
-        let originSyntax: SyntaxProtocol
-        let expresion: Int
+        let originSyntax: TokenSyntax
+        let expression: Int
+    }
+  
+    subscript(offset: Int) -> TokenSyntax? {
+        infos.first { info in
+            info.expression == offset
+        }?.originSyntax
     }
 
     private(set) var infos: [Info] = []
@@ -35,7 +41,7 @@ final public class CaptureListRewriter: SyntaxRewriter {
 
         infos.append(.init(
             originSyntax: name,
-            expresion: origin + offset + newOffset))
+            expression: origin + offset + newOffset))
 
         offset += newOffset
 

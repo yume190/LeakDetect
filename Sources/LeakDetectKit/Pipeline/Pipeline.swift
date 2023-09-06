@@ -16,9 +16,9 @@ struct Visitors {
     let assign: AssignClosureVisitor
     let capture: DeclsVisitor
     
-    init(_ client: SKClient) {
+    init(_ client: SKClient, _ rewriter: CaptureListRewriter) {
         self.assign = AssignClosureVisitor(client: client)
-        self.capture = DeclsVisitor(client: client)
+        self.capture = DeclsVisitor(client: client, rewriter)
     }
     
     func detect() throws -> [LeakResult] {
@@ -47,18 +47,18 @@ public struct SingleFilePipeline {
     }
     
     /// change code
-    private func stage1() throws -> SKClient {
+    private func stage1() throws -> (SKClient, CaptureListRewriter) {
         let source = try SyntaxParser.parse(source: code)
         let rewriter = CaptureListRewriter()
         let newSource = rewriter.visit(source)
         let newCode = newSource.description
         let client = SKClient(path: filePath, code: newCode, arguments: arguments)
-        return client
+        return (client, rewriter)
     }
     
     /// visit all potential leaks
-    private func state2(_ client: SKClient) -> Visitors {
-        let visitors = Visitors(client)
+    private func state2(_ client: SKClient, _ rewriter: CaptureListRewriter) -> Visitors {
+        let visitors = Visitors(client, rewriter)
         visitors.assign.walk(client.sourceFile)
         visitors.capture.customWalk(client.sourceFile)
         return visitors
@@ -69,10 +69,10 @@ public struct SingleFilePipeline {
       _ reporter: Reporter,
       _ isVerbose: Bool
     ) throws -> [LeakResult] {
-        let client = try stage1()
+        let (client, rewriter) = try stage1()
         try client.editorOpen()
         
-        let visitors = state2(client)
+        let visitors = state2(client, rewriter)
         let results = try visitors.detect()
         
         try client.editorClose()
@@ -96,7 +96,7 @@ public struct Pipeline {
     }
     
     /// change code
-    private func stage1() throws -> SKClient {
+    private func stage1() throws -> (SKClient, CaptureListRewriter) {
         let path = Path(filePath)
         let code = try path.read(.utf8)
         let source = try SyntaxParser.parse(source: code)
@@ -105,22 +105,22 @@ public struct Pipeline {
         let newCode = newSource.description
         
         let client = SKClient(path: filePath, code: newCode, arguments: module.compilerArguments)
-        return client
+        return (client, rewriter)
     }
     
     /// visit all potential leaks
-    private func state2(_ client: SKClient) -> Visitors {
-        let visitors = Visitors(client)
+    private func state2(_ client: SKClient, _ rewriter: CaptureListRewriter) -> Visitors {
+        let visitors = Visitors(client, rewriter)
         visitors.assign.walk(client.sourceFile)
         visitors.capture.customWalk(client.sourceFile)
         return visitors
     }
     
     private func detect() throws -> [LeakResult] {
-        let client = try stage1()
+        let (client, rewriter) = try stage1()
         try client.editorOpen()
         
-        let visitors = state2(client)
+        let visitors = state2(client, rewriter)
         let results = try visitors.detect()
         
         try client.editorClose()

@@ -15,23 +15,23 @@ import SKClient
 /// Source Code use ``customWalk`` to walk `static func` and `sub DeclsVisitor`
 public final class DeclsVisitor: SyntaxVisitor {
     private lazy var _subVisitors: [DeclsVisitor] = []
-    public let client: SKClient
     private let leak: LeakVisitor
-    public init(client: SKClient) {
-        self.client = client
+
+    
+    public init(client: SKClient, _ rewriter: CaptureListRewriter) {
         self.leak = LeakVisitor(
             context: .global(.file),
             client: client,
-            parentVisitor: nil)
+            rewriter: rewriter)
+        
         super.init(viewMode: .sourceAccurate)
     }
     
-    init(client: SKClient, _ global: LeakVisitor.Context.Global) {
-        self.client = client
+    init(client: SKClient, _ rewriter: CaptureListRewriter, _ global: LeakVisitor.Context.Global) {
         self.leak = LeakVisitor(
             context: .global(global),
             client: client,
-            parentVisitor: nil)
+            rewriter: rewriter)
         super.init(viewMode: .sourceAccurate)
     }
 
@@ -81,7 +81,7 @@ extension DeclsVisitor {
     }
 
     private final func append<Syntax: SyntaxProtocol>(_ syntax: Syntax, _ global: LeakVisitor.Context.Global) {
-        let visitor = DeclsVisitor(client: client, global)
+        let visitor = DeclsVisitor(client: leak.client, leak.rewriter, global)
         self._subVisitors.append(visitor)
         visitor.customWalk(syntax)
     }

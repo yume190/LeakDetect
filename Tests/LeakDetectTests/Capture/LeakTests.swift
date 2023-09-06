@@ -22,7 +22,7 @@ class _LeakTests: XCTestCase {
     static let _model = resource(file: "Model.swift.data")
     static let _load = [_functions, _model]
 
-    static func detect(_ code: String, _ sdk: SDK = .macosx) throws -> [IdentifierExprSyntax] {
+    static func detect(_ code: String, _ sdk: SDK = .macosx) throws -> ([LeakResult], CaptureListRewriter) {
 //        let pipeline = SingleFilePipeline(
 //            "code: /temp.swift",
 //            code,
@@ -34,23 +34,21 @@ class _LeakTests: XCTestCase {
         let rewriter = CaptureListRewriter()
         let newSource = rewriter.visit(source)
         let newCode = newSource.description
-        var args = sdk.args + Self._load
+        let args = sdk.args + Self._load
         
         let client = SKClient(code: newCode, arguments: args)
         try client.editorOpen()
 
-        let visitor = DeclsVisitor(client: client)
+        let visitor = DeclsVisitor(client: client, rewriter)
         visitor.customWalk(client.sourceFile)
         
-        let ids = try visitor.detect()
+        let results = try visitor.detect()
         try client.editorClose()
 
-        return ids.compactMap {
-            $0.location.syntax?.as(IdentifierExprSyntax.self)
-        }
+        return (results, rewriter)
     }
 
     static func count(_ code: String, _ sdk: SDK = .macosx) throws -> Int {
-        return try detect(code, sdk).count
+        return try detect(code, sdk).0.count
     }
 }
