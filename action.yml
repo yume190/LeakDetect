@@ -12,7 +12,7 @@ inputs:
     default: ${{github.repository}}
 
   token:
-    description: 'Github token, ${{ secrets.GITHUB_TOKEN }}'
+    description: 'Github token'
     required: true
 
   issue:
@@ -43,7 +43,7 @@ runs:
       run: |
         # TEMP_DIR=$(mktemp -d)
         curl -sSL \
-          "https://github.com/yume190/LeakDetect/releases/download/0.0.5/leakDetect" \
+          "https://github.com/yume190/LeakDetect/releases/download/0.0.6/leakDetect" \
           -o leakDetect
         chmod +x leakDetect
 

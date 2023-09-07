@@ -43,7 +43,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - uses: yume190/LeakDetect@0.0.5
+    - uses: yume190/LeakDetect@0.0.6
       with:
         # https://github.com/antranapp/LeakDetector
         module: LeakDetectorDemo

@@ -22,7 +22,7 @@ struct Command: AsyncParsableCommand {
 
     leakDetect --module LeakDetectorDemo --file LeakDetectorDemo.xcworkspace
     """,
-    version: "0.0.5"
+    version: "0.0.6"
   )
 
   @Flag(name: [.customLong("verbose", withSingleDash: false), .short], help: "verbose")

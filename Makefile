@@ -1,4 +1,4 @@
-VERSION = 0.0.5
+VERSION = 0.0.6
 
 include CodeQL.mk
 
@@ -78,3 +78,10 @@ proj:
 	leakDetect \
 		--module LeakDetectorDemo \
 		--file LeakDetector/LeakDetectorDemo.xcworkspace
+
+# git clone https://github.com/chauvincent/LeakyApp-iOS
+.PHONY: proj2
+proj2:
+	leakDetect \
+		--module LeakyApp \
+		--file LeakyApp-iOS/LeakyApp.xcodeproj
