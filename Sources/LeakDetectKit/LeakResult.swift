@@ -29,7 +29,7 @@ public struct LeakResult {
 
 }
 
-extension Reporter {
+public extension Reporter {
   func report(_ result: LeakResult) {
     report(result.location, reason: result.reportReason)
   }

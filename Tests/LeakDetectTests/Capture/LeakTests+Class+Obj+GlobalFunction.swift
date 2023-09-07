@@ -10,8 +10,6 @@ import XCTest
 
 final class Class_Obj_GlobalFunction_LeakTests: _LeakTests {}
 
-#warning("todo implement scan global function")
-
 // MARK: - class -
 
 // MARK: Single self
