@@ -43,7 +43,7 @@ runs:
       run: |
         # TEMP_DIR=$(mktemp -d)
         curl -sSL \
-          "https://github.com/yume190/LeakDetect/releases/download/0.0.4.4/leakDetect" \
+          "https://github.com/yume190/LeakDetect/releases/download/0.0.5/leakDetect" \
           -o leakDetect
         chmod +x leakDetect
 
@@ -58,6 +58,7 @@ runs:
       run: |
         ./leakDetect \
           --reporter custom \
+          --github \
           --sdk ${{inputs.sdk}} \
           --file ${{inputs.file}}
 
@@ -72,5 +73,6 @@ runs:
       run: |
         ./leakDetect \
           --reporter custom \
+          --github \
           --module ${{inputs.module}} \
           --file ${{inputs.file}}

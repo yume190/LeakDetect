@@ -31,6 +31,9 @@ struct Command: AsyncParsableCommand {
   @Option(name: [.customLong("reporter", withSingleDash: false)], help: "[\(Reporter.all)]")
   var reporter: Reporter = .vscode
 
+  @Flag(name: [.customLong("github", withSingleDash: false), .short], help: "Is use github action")
+  var github: Bool = false
+
   @Option(name: [.customLong("sdk", withSingleDash: false)], help: "[\(SDK.all)]")
   var sdk: SDK = .iphonesimulator
 
@@ -90,15 +93,16 @@ struct Command: AsyncParsableCommand {
 
   private func newReporter() -> (Reporter, GithubAtionReporter?) {
     switch reporter {
-    case .xcode: fallthrough
-    case .vscode:
-      return (reporter, nil)
-    case .custom:
+    case .custom where github:
       let githubAction = GithubAtionReporter(base: base)
       let reporter = Reporter.custom { [weak githubAction] location, _ in
         githubAction?.add(location)
       }
       return (reporter, githubAction)
+    case .xcode: fallthrough
+    case .vscode: fallthrough
+    case .custom :
+      return (reporter, nil)
     }
   }
 
