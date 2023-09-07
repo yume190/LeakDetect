@@ -1,12 +1,18 @@
-VERSION = 0.0.4
+VERSION = 0.0.5
 
 include CodeQL.mk
 
-.PHONY: githubRelease
-githubRelease:
+.PHONY: updateVersion
+updateVersion:
 	sed -i '' 's|\(version: "\)\(.*\)\("\)|\1$(VERSION)\3|' Sources/LeakDetect/Command.swift
+	sed -i '' 's|\(download\/\)\(.*\)\(\/\)|\1$(VERSION)\3|' action.yml
+	sed -i '' 's|\(LeakDetect@\)\(.*\)|\1$(VERSION)|' README.md
+	sed -i '' 's|\(LeakDetect@\)\(.*\)|\1$(VERSION)|' README_ZH.md
 
+.PHONY: githubRelease
+githubRelease: updateVersion
 	git add Sources/LeakDetect/Command.swift
+	git add action.yml
 	git add Makefile
 
 	git commit -m "Update to $(VERSION)"
@@ -63,12 +69,12 @@ graph:
 single:
 	leakDetect \
 		--sdk macosx \
-		--file fixture/temp.swift
+		--file fixture/temp.swift \
+		--reporter
 
+# git clone https://github.com/antranapp/LeakDetector
 .PHONY: proj
 proj:
- 	# git clone https://github.com/antranapp/LeakDetector
-
 	leakDetect \
 		--module LeakDetectorDemo \
 		--file LeakDetector/LeakDetectorDemo.xcworkspace

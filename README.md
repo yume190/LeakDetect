@@ -21,7 +21,37 @@ leakDetect \
 leakDetect \
     --module "SCHEME NAME" \
     --file Sample.xcodeproj
+
+# spm
+leakDetect \
+    --module TARGET_NAME \
+    --file .
+
+# file
+leakDetect \
+    --sdk macosx \
+    --file xxx.swift
 ```
+
+## Usage(Github Action)
+
+```yaml
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: yume190/LeakDetect@0.0.5
+      with:
+        # https://github.com/antranapp/LeakDetector
+        module: LeakDetectorDemo
+        file: LeakDetectorDemo.xcworkspace
+        token: ${{secrets.GITHUB_TOKEN}}
+```
+
+### Mode
 
 #### [Assign](LeakDetectKit/Assign/AssignClosureVisitor.swift)
 
