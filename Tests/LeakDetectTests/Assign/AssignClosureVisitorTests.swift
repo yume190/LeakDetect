@@ -13,19 +13,18 @@ import XCTest
 final class AssignClosureVisitorTests: XCTestCase {
     func testNormal() throws {
         let path: String = resource(file: "AssignClosure.swift.data")
-        let client = try SKClient(path: path)
-        let visitor = AssignClosureVisitor(client: client)
-        visitor.walk(client.sourceFile)
-        let results = visitor.results.map(\.location)
+        let pipeline = try Pipeline(path, SDK.iphoneos.args + [path])
+        let results = try pipeline.detectAssign().map(\.testLocation)
 
         let espect = [
-            CodeLocation(path: path, location: SourceLocation(offset: 171, converter: client.converter)),
-            CodeLocation(path: path, location: SourceLocation(offset: 191, converter: client.converter)),
-            CodeLocation(path: path, location: SourceLocation(offset: 216, converter: client.converter)),
-            CodeLocation(path: path, location: SourceLocation(offset: 231, converter: client.converter)),
+          "abc:11:27",
+          "abc:12:17",
+          "abc:14:21",
+          "abc:15:11",
+          "def:29:100",
         ]
-
-        XCTAssertEqual(results.count, espect.count)
+      
+        XCTAssertEqual(results.count, 5)
         XCTAssertEqual(results, espect)
     }
 }

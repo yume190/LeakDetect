@@ -95,8 +95,8 @@ struct Command: AsyncParsableCommand {
     switch reporter {
     case .custom where github:
       let githubAction = GithubAtionReporter(base: base)
-      let reporter = Reporter.custom { [weak githubAction] location, _ in
-        githubAction?.add(location)
+      let reporter = Reporter.custom { [weak githubAction] result in
+        githubAction?.add(result)
       }
       return (reporter, githubAction)
     case .xcode: fallthrough

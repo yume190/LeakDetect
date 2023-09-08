@@ -21,10 +21,10 @@ extension SDK {
       
     case .iphoneos:
       /// arm64-apple-ios11.0
-      return ["-target", "arm64-apple-ios"]
+      return ["-target", "arm64-apple-ios11.0"]
     case .iphonesimulator:
       /// x86_64-apple-ios16.2-simulator
-      return ["-target", "x86_64-apple-ios-simulator"]
+      return ["-target", "x86_64-apple-ios11.0-simulator"]
     
     // TODO:
     case .watchos:

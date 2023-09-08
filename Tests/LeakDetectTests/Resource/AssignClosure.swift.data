@@ -25,10 +25,13 @@ class A {
 
       let tf = UITextField()
       tf.addTarget(self, action: #selector(self.abc), for: .editingChanged)
+      
+      NotificationCenter.default.addObserver(forName: .init(""), object: nil, queue: .main, using: def)
   }
 
   func def(_ block: Closure?) {}
   func def(_ sel: Selector) {}
   func def(a: A) {}
   func def(any: Any?) {}
+  func def(_ noti: Notification) {}
 }

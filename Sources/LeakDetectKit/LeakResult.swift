@@ -19,14 +19,22 @@ public struct LeakResult {
     self.verbose = verbose
   }
   
-  var syntax: String? {
+  public var targetName: String? {
     location.syntax?.withoutTrivia().description
   }
   
-  var reportReason: String  {
-    "Target: `\(syntax ?? "")`, Reason: \(reason)"
+  public var reportReason: String  {
+    "Target: `\(targetName ?? "")`, Reason: \(reason)"
   }
-
+  
+  public var testLocation: String? {
+    guard
+      let targetName,
+      let line = location.location.line,
+      let col = location.location.column
+    else {return nil}
+    return "\(targetName):\(line):\(col)"
+  }
 }
 
 public extension Reporter {

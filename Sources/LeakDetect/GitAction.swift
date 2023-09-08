@@ -1,5 +1,5 @@
 //
-//  Env.swift
+//  GithubAtionReporter.swift
 //
 //
 //  Created by Yume on 2023/8/28.
@@ -7,6 +7,7 @@
 
 import Foundation
 import PathKit
+import LeakDetectKit
 import SKClient
 
 /// [Context](https://docs.github.com/en/actions/learn-github-actions/contexts#github-context)
@@ -60,16 +61,16 @@ class GithubAtionReporter {
     let issue: String
 
     let auth: String
-    private(set) var codes: [CodeLocation] = []
-    func add(_ code: CodeLocation) {
-        if let line = code.location.line, let col = code.location.column {
-          let path = rPath(code)
-          let target = code.syntax?.withoutTrivia().description ?? "_"
+    private(set) var codes: [LeakResult] = []
+    func add(_ result: LeakResult) {
+      let location = result.location
+      if let line = location.location.line, let col = location.location.column {
+          let path = rPath(location)
           print("""
-          ::warning file=\(path),line=\(line),col=\(col)::\(target)"
+          ::warning file=\(path),line=\(line),col=\(col)::\(result.reportReason)
           """)
         }
-        codes.append(code)
+        codes.append(result)
     }
 
     /// base: https://github.com/
@@ -78,7 +79,8 @@ class GithubAtionReporter {
     /// sha:  9fb49184787fe2bfbd0802bf87xxxxx
     /// file: Sources/LeakDetect/Command.swift
     /// line: #L10-L20
-    private func path(_ code: CodeLocation) -> String {
+    private func path(_ result: LeakResult) -> String {
+        let code = result.location
         func lines(_ code: CodeLocation) -> String {
             guard let line = code.location.line else {
                 return ""
@@ -95,15 +97,17 @@ class GithubAtionReporter {
         """
     }
 
-    private func comment(code: CodeLocation) -> String {
+    private func comment(_ result: LeakResult) -> String {
+        let code = result.location
         return """
         
-        \(path(code))
+        \(path(result))
 
         > [!WARNING]
         > Line: \(code.location.line ?? -1)
         > Column: \(code.location.column ?? -1)
-        > Target: \(code.syntax?.withoutTrivia().description ?? "")
+        > Target: \(result.targetName ?? "")
+        > Reason: \(result.reason)
         """
     }
 
