@@ -69,8 +69,7 @@ graph:
 single:
 	leakDetect \
 		--sdk macosx \
-		--file fixture/temp.swift \
-		--reporter
+		--file fixture/temp.swift
 
 # git clone https://github.com/antranapp/LeakDetector
 .PHONY: proj
