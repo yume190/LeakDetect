@@ -36,9 +36,9 @@ inputs:
     default: ''
 
   skip:
-    description: '.leakDetect.yml'
+    description: 'skip list'
     required: true
-    default: '.leakDetect.yml'
+    default: '.leakdetect.yml'
 
 runs:
   using: 'composite'

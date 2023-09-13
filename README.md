@@ -55,7 +55,7 @@ jobs:
 
 ## Skip List
 
-default path is `.leakDetect.yml`, or you can use `--skip list.yml`.
+default path is `.leakdetect.yml`, or you can use `--skip list.yml`.
 
 ```yaml
 # objc function `Dispatch.DispatchQueue.main.async {...}`
@@ -65,8 +65,8 @@ default path is `.leakDetect.yml`, or you can use `--skip list.yml`.
     funcs:
     - async
     - asyncAfter
-# static function `UIKit.UIView.anmiate {...}`
-- module: UIKit
+# static function `UIKit.UIView.UIView.anmiate {...}`
+- module: UIKit.UIView
   types:
   - name: UIView
     staitc:
@@ -74,11 +74,11 @@ default path is `.leakDetect.yml`, or you can use `--skip list.yml`.
 # Some Special case
 - module: YOUR_MODULE_NAME
   types:
-  # global function func escape(...) {}`
+  # global function `func escape(...) {}`
   - name: ""
     funcs:
     - escape
-  # constructor struct A {...}`
+  # constructor `struct A {...}`
   # A(...) {}
   - name: A
     staitc:

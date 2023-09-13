@@ -55,7 +55,7 @@ jobs:
 
 ## Skip List
 
-預設路徑位於 `.leakDetect.yml`, 或者可以使用 `--skip list.yml`.
+預設路徑位於 `.leakdetect.yml`, 或者可以使用 `--skip list.yml`.
 
 ```yaml
 # objc function `Dispatch.DispatchQueue.main.async {...}`
@@ -65,8 +65,8 @@ jobs:
     funcs:
     - async
     - asyncAfter
-# static function `UIKit.UIView.anmiate {...}`
-- module: UIKit
+# static function `UIKit.UIView.UIView.anmiate {...}`
+- module: UIKit.UIView
   types:
   - name: UIView
     staitc:
@@ -74,11 +74,11 @@ jobs:
 # Some Special case
 - module: YOUR_MODULE_NAME
   types:
-  # global function func escape(...) {}`
+  # global function `func escape(...) {}`
   - name: ""
     funcs:
     - escape
-  # constructor struct A {...}`
+  # constructor `struct A {...}`
   # A(...) {}
   - name: A
     staitc:

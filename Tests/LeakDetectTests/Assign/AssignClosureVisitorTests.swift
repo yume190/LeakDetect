@@ -16,7 +16,7 @@ final class AssignClosureVisitorTests: XCTestCase {
         let pipeline = try Pipeline(path, SDK.iphoneos.args + [path])
         let results = try pipeline.detectAssign().map(\.testLocation)
 
-        let espect = [
+        let expect = [
           "abc:11:27",
           "abc:12:17",
           "abc:14:21",
@@ -25,6 +25,6 @@ final class AssignClosureVisitorTests: XCTestCase {
         ]
       
         XCTAssertEqual(results.count, 5)
-        XCTAssertEqual(results, espect)
+        XCTAssertEqual(results, expect)
     }
 }
