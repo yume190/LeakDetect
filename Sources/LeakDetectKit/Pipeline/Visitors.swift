@@ -17,9 +17,9 @@ public struct Visitors {
     self.capture = DeclsVisitor(client: client, rewriter)
   }
 
-  func detect() throws -> [LeakResult] {
+  func detect(_ skips: Skips) throws -> [LeakResult] {
     return try
       assign.detect() +
-      capture.detect()
+      capture.detect(skips)
   }
 }

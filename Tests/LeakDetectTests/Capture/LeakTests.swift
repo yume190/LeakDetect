@@ -27,10 +27,10 @@ class _LeakTests: XCTestCase {
     let pipeline = try Pipeline(
       path,
       code,
-      SDK.macosx.args + Self._load + [path]
+      sdk.args + Self._load + [path]
     )
 
-    return try (pipeline, pipeline.detectCapture())
+    return try (pipeline, pipeline.detectCapture(.default))
   }
 
   static func count(_ code: String, _ sdk: SDK = .macosx) throws -> Int {

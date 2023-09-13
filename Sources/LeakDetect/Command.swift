@@ -11,6 +11,7 @@ import LeakDetectKit
 import Rainbow
 import SKClient
 import SourceKittenFramework
+import Yams
 
 struct Command: AsyncParsableCommand {
   static var configuration: CommandConfiguration = .init(
@@ -42,6 +43,19 @@ struct Command: AsyncParsableCommand {
 
   @Option(name: [.customLong("module", withSingleDash: false)], help: "Name of Swift module to document (can't be used with `--targetType singleFile`)")
   var moduleName = ""
+
+  @Option(name: [.customLong("skip", withSingleDash: false)], help: "skip function list")
+  var skip: String = ".leakdetect.yml"
+  var skips: Skips {
+    do {
+      let content = try Data(contentsOf: URL(fileURLWithPath: skip))
+      let decoder = YAMLDecoder()
+      let functions = try decoder.decode([Skips.Module].self, from: content)
+      return Skips(functions)
+    } catch {
+      return Skips.default
+    }
+  }
 
   @Option(name: [.customLong("file", withSingleDash: false)], help: "xxx.xcworkspace/xxx.xcodeproj/xxx.swift")
   var file: String
@@ -101,7 +115,7 @@ struct Command: AsyncParsableCommand {
       return (reporter, githubAction)
     case .xcode: fallthrough
     case .vscode: fallthrough
-    case .custom :
+    case .custom:
       return (reporter, nil)
     }
   }
@@ -111,7 +125,7 @@ struct Command: AsyncParsableCommand {
 
     if case .singleFile = targetType.detect(path) {
       let results = try Pipeline(path, arguments + [path] + sdk.args)
-        .detect()
+        .detect(skips)
       report(reporter, results)
 
       try await githubAction?.call()
@@ -141,7 +155,7 @@ struct Command: AsyncParsableCommand {
         let title = "[SCAN \(index + 1)/\(all)]:".applyingCodes(Color.yellow, Style.bold)
         print("\(title) \(filePath)")
       }
-      let results = try pipeline.detect()
+      let results = try pipeline.detect(skips)
       report(reporter, results)
       leakCount += results.count
     }

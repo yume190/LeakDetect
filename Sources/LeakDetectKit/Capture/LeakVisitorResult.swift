@@ -49,7 +49,7 @@ public struct LeakVisitorResult: CustomStringConvertible {
     )
   }
 
-  static func handleNormal(_ visitor: LeakVisitor) throws -> [LeakVisitorResult] {
+  static func handleNormal(_ visitor: LeakVisitor, _ skips: Skips) throws -> [LeakVisitorResult] {
     guard let start = visitor.start else { return [] }
     let startLoc = start.offset
 
@@ -57,53 +57,53 @@ public struct LeakVisitorResult: CustomStringConvertible {
       visitor.ids
 
     let results = try ids.compactMap { id -> LeakVisitorResult? in
-      let cursorInfo = try visitor.client(id.offset)
-      guard cursorInfo.isLeak(startLoc) else { return nil }
+      let idInfo = try visitor.client(id.offset)
+      guard idInfo.isLeak(startLoc) else { return nil }
+      guard let ref = idInfo.offset else { return nil }
 
-      switch visitor.context {
-      case .cumputedImmediately: fallthrough
-      case .nonEscaping:
-        var parent: LeakVisitor? = visitor.parentVisitor
-        var reason = "Parent"
-        var isCapture = false
-        while let _parent = parent {
-          if _parent.context.isEscape {
+      var layers = -1
+      var isCapture = false
+      var parent: LeakVisitor? = visitor
+
+      while let _parent = parent {
+        defer {
+          parent = _parent.parentVisitor
+          layers += 1
+        }
+        let function = _parent.function?.tokenSyntax
+        let info: SourceKitResponse? = function != nil ?
+          try visitor.client(function!) :
+          nil
+
+        if _parent.context.isEscape {
+          if let info {
+            if !skips.isSkip(info) {
+              isCapture = true
+              continue
+            }
+          } else {
+            /// handle {}()
             isCapture = true
-            parent = _parent.parentVisitor
-            reason += ".Parent"
             continue
           }
-
-          let end1 =
-            _parent.context.isGlobal &&
-            isCapture
-
-          let end2 =
-            !_parent.context.isColsure &&
-            isCapture &&
-            _parent.parentVisitor?.context.isGlobal == true
-
-          if end1 || end2 {
-            return .init(
-              originLocation: originLocation(id, visitor),
-              location: visitor.client(location: id),
-              reason: "In Non-Escaping Closure Capture Ref From \(reason)",
-              visitor: visitor
-            )
-          }
-
-          return nil
         }
-        return nil
 
-      default:
+        let end = (_parent.start?.offset ?? 0) <= ref
+        if end {
+          break
+        }
+      }
+      if isCapture {
+        let reason = [String].init(repeating: "Parent", count: layers).joined(separator: ".")
+        let closureName = visitor.function?.withoutTrivia().description ?? "_"
         return .init(
           originLocation: originLocation(id, visitor),
           location: visitor.client(location: id),
-          reason: "Capture Ref From Parent",
+          reason: "In \(visitor.context) Closure `\(closureName)` Capture Ref From \(reason)",
           visitor: visitor
         )
       }
+      return nil
     }
 
     return results
@@ -148,47 +148,9 @@ public struct LeakVisitorResult: CustomStringConvertible {
 
   var result: LeakResult {
     LeakResult(
-      //          location: location,
       location: originLocation ?? location,
       reason: reason,
       verbose: description
     )
   }
 }
-
-import Foundation
-
-func escape(block: @escaping () -> Void) {}
-
-func nonescape(block: () -> Void) {}
-
-// class A {
-//    func leak() {
-//        let a = A()
-//        let b = A()
-//        // escape {
-//        //     print(a)
-//        // }
-//
-//        // nonescape {
-//        //     let block = {
-//        //         print(a)
-//        //     }
-//        // }
-//
-//        nonescape {
-//            escape { [b = a] in
-//                print(a, b)
-//            }
-//        }
-//
-//        // struct AA {
-//        //     func leak() {
-//        //         let aa = AA ()
-//        //         escape {
-//        //             print(aa)
-//        //         }
-//        //     }
-//        // }
-//    }
-// }

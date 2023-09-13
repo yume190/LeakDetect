@@ -30,6 +30,8 @@ let package = Package(
         .package(url: "https://github.com/onevcat/Rainbow", from: "4.0.1"),
         .package(url: "https://github.com/zonble/HumanString.git", from: "0.1.1"),
         .package(url: "https://github.com/kylef/PathKit", from: "1.0.1"),
+        .package(url: "https://github.com/jpsim/Yams", from: "5.0.5"),
+        
         
     ],
     targets: [
@@ -41,6 +43,7 @@ let package = Package(
                 .product(name: "SKClient", package: "TypeFill"),
                 "LeakDetectKit",
                 "PathKit",
+                "Yams",
             ]
         ),
 

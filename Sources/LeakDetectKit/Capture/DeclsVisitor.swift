@@ -88,13 +88,13 @@ extension DeclsVisitor {
 }
 
 public extension DeclsVisitor {
-    func detect() throws -> [LeakResult] {
+    func detect(_ skips: Skips) throws -> [LeakResult] {
         let all = leakVisitors
 
         var results: [LeakVisitorResult] = []
 
         for visitor in all {
-            results += try LeakVisitorResult.handleNormal(visitor)
+            results += try LeakVisitorResult.handleNormal(visitor, skips)
         }
       
         let newResults = results.map(\.result)

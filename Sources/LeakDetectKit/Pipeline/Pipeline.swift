@@ -64,16 +64,16 @@ public struct Pipeline {
   }
 
   @discardableResult
-  public func detect() throws -> [LeakResult] {
+  public func detect(_ skips: Skips) throws -> [LeakResult] {
     try prepare {
-      try visitors.detect()
+      try visitors.detect(skips)
     }
   }
 
   @discardableResult
-  public func detectCapture() throws -> [LeakResult] {
+  public func detectCapture(_ skips: Skips) throws -> [LeakResult] {
     try prepare {
-      try visitors.capture.detect()
+      try visitors.capture.detect(skips)
     }
   }
 

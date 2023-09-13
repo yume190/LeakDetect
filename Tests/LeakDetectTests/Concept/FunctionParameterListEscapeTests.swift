@@ -22,7 +22,7 @@ final class FunctionParameterListEscapeTests: XCTestCase {
     private let b = """
     @inlinable func map<T>(_ transform: (Element) throws -> T) rethrows -> [T]
     """
-        
+  
     func testNormal0() throws {
         let target = self.normal
         XCTAssertTrue(EscapingDetector.detect(code: target, index: 0))
@@ -51,5 +51,10 @@ final class FunctionParameterListEscapeTests: XCTestCase {
     func testNew2() throws {
         let target = self.b
         XCTAssertFalse(EscapingDetector.detect(code: target, index: 0))
+    }
+  
+    func testDispatchQueue() {
+        let code = "func async(group: DispatchGroup? = nil, qos: DispatchQoS = .unspecified, flags: DispatchWorkItemFlags = [], execute work: @escaping @convention(block) () -> Void)"
+        XCTAssertTrue(EscapingDetector.detectLast(code: code))
     }
 }
