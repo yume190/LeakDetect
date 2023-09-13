@@ -1,11 +1,5 @@
 import Foundation
 
-func escape(block: @escaping () -> Void) {
-}
-
-func nonescape(block: () -> Void) {
-}
-
 class A {
     func leak() {
         let a = A()
@@ -20,9 +14,11 @@ class A {
             }
         }
 
-        nonescape {
-            escape { [b = a] in
-                print(a, b)
+        escape2 {
+            nonescape {
+                escape { [b = a] in
+                    print(a, b)
+                }
             }
         }
 
@@ -36,3 +32,7 @@ class A {
         }
     }
 }
+
+func escape(block: @escaping () -> Void) {}
+func escape2(block: @escaping () -> Void) {}
+func nonescape(block: () -> Void) {}
