@@ -6,11 +6,10 @@
 //
 
 import Foundation
+import LeakDetectKit
 import XCTest
 
 final class Normal_LeakTests: _LeakTests {}
-
-// MARK: - No Leak
 
 extension Normal_LeakTests {
   final func testWhenCaptureWeak() throws {
@@ -74,6 +73,29 @@ extension Normal_LeakTests {
     
     try XCTAssertEqual(Self.count(code), 0)
   }
+  
+  final func testCaptureList3() throws {
+    let code = """
+    extension C {
+      func test() {
+        var a = C()
+        var b = C()
+        escape { [self, a = b] in
+          escape { [a, b] in
+            print(self, a, b)
+          }
+        }
+      }
+    }
+    """
+    #warning("wrong position, b:6:13 -> b:6:20")
+    let expect = [
+      "b:6:13",
+      "self:7:15",
+    ]
+    let results = try Self.detect(code).1.map(\.testLocation)
+    XCTAssertEqual(results, expect)
+  }
 }
   
 // MARK: - Skips
@@ -116,6 +138,8 @@ extension Normal_LeakTests {
   }
 }
 
+// MARK: - iOS
+
 extension Normal_LeakTests {
   final func testLeak2_ObjcClosure() throws {
     let code = """
@@ -135,5 +159,29 @@ extension Normal_LeakTests {
     """
         
     try XCTAssertEqual(Self.count(code, .iphoneos), 2)
+  }
+  
+  /// Promise Like + Skip Func
+  /// Promise Like:
+  ///   withUnsafeContinuation
+  ///   Observable.create
+  final func testPromiseLikeWithSkipFunc() throws {
+    let code = """
+    import Foundation
+    extension C {
+      func test() {
+        future { c in
+          DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            print(c)
+          }
+        }
+      }
+      func future(_ callback: @escaping (C) -> Void) {
+    
+      }
+    }
+    """
+  
+    try XCTAssertEqual(Self.count(code, .iphoneos), 0)
   }
 }

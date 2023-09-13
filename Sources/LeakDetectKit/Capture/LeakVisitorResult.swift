@@ -66,6 +66,11 @@ public struct LeakVisitorResult: CustomStringConvertible {
       var parent: LeakVisitor? = visitor
 
       while let _parent = parent {
+        let end = (_parent.start?.offset ?? 0) <= ref
+        if end {
+          break
+        }
+        
         defer {
           parent = _parent.parentVisitor
           layers += 1
@@ -86,11 +91,6 @@ public struct LeakVisitorResult: CustomStringConvertible {
             isCapture = true
             continue
           }
-        }
-
-        let end = (_parent.start?.offset ?? 0) <= ref
-        if end {
-          break
         }
       }
       if isCapture {
