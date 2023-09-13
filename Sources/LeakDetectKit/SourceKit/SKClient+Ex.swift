@@ -85,6 +85,7 @@ extension SourceKitResponse {
         /// `a`
         case .refClass: fallthrough
         /// ???
+        /// global function ?
         /// print
         case .refFunctionFree:
             return false
@@ -94,6 +95,12 @@ extension SourceKitResponse {
     }
 
     func isLeak(_ startLoc: Int) -> Bool {
+        /// is weak var / unowned var
+        if isWeak {
+            return false
+        }
+        /// is variable type is closure
+        /// is skip type
         if isEscapeClosure || isSkipType {
             return false
         }
@@ -123,5 +130,12 @@ extension SourceKitResponse {
             EscapingDetector.detect(code: codeDefine) ||
             EscapingDetector.detectWithTypeAlias(code: type)
         return isEscapeClosure
+    }
+  
+    /// "weak var c: C?"
+    /// "unowned var c: C"
+    private var isWeak: Bool {
+        let codeDefine = self.annotated_decl_xml_value ?? ""
+        return WeakDetector.detect(code: codeDefine)
     }
 }
