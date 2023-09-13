@@ -35,6 +35,11 @@ inputs:
     required: true
     default: ''
 
+  skip:
+    description: '.leakDetect.yml'
+    required: true
+    default: '.leakDetect.yml'
+
 runs:
   using: 'composite'
   steps:
@@ -59,6 +64,7 @@ runs:
         ./leakDetect \
           --reporter custom \
           --github \
+          --skip ${{inputs.skip}} \
           --sdk ${{inputs.sdk}} \
           --file ${{inputs.file}}
 
@@ -74,5 +80,7 @@ runs:
         ./leakDetect \
           --reporter custom \
           --github \
+          --skip ${{inputs.skip}} \
           --module ${{inputs.module}} \
           --file ${{inputs.file}}
+

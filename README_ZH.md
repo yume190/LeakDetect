@@ -51,6 +51,45 @@ jobs:
         token: ${{secrets.GITHUB_TOKEN}}
 ```
 
+---
+
+## Skip List
+
+預設路徑位於 `.leakDetect.yml`, 或者可以使用 `--skip list.yml`.
+
+```yaml
+# objc function `Dispatch.DispatchQueue.main.async {...}`
+- module: Dispatch
+  types:
+  - name: DispatchQueue
+    funcs:
+    - async
+    - asyncAfter
+# static function `UIKit.UIView.anmiate {...}`
+- module: UIKit
+  types:
+  - name: UIView
+    staitc:
+    - animate
+# Some Special case
+- module: YOUR_MODULE_NAME
+  types:
+  # global function func escape(...) {}`
+  - name: ""
+    funcs:
+    - escape
+  # constructor struct A {...}`
+  # A(...) {}
+  - name: A
+    staitc:
+    - init
+  # Nested Type A.B
+  - name: A.B
+  # Generic Type C<T>.D<U>
+  # ignore generic
+  - name: C.D
+```
+
 ### Mode
 
 #### [Assign](LeakDetectKit/Assign/AssignClosureVisitor.swift)

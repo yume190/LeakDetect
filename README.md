@@ -88,7 +88,6 @@ default path is `.leakDetect.yml`, or you can use `--skip list.yml`.
   # Generic Type C<T>.D<U>
   # ignore generic
   - name: C.D
-
 ```
 
 ### Mode
