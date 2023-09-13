@@ -27,7 +27,17 @@ internal final class TypeEscapeVisitor: SyntaxVisitor {
                elements.count == 1,
                t.baseType.description == "Swift",
                t.name.description == "Optional" {
-                self.isEscape = true
+                // <(Swift.Error) -> ()> -> ["(Swift.Error)", "()"]
+                // <Int>                 -> []
+                let parts = elements
+                    .first?
+                    .withoutTrivia()
+                    .description
+                    .parseSourkitFunctionTypeName() ?? []
+              
+                if !parts.isEmpty {
+                    self.isEscape = true
+                }
                 return .skipChildren
             }
         }
@@ -56,7 +66,10 @@ internal final class TypeEscapeVisitor: SyntaxVisitor {
     }
     
     internal override func visit(_ node: AttributeSyntax) -> SyntaxVisitorContinueKind {
-        self.isEscape = node.attributeName.text == "escaping"
+        if node.attributeName.text == "escaping" {
+            self.isEscape = true
+        }
+        
         return .skipChildren
     }
 }
