@@ -50,8 +50,8 @@ struct Command: AsyncParsableCommand {
     do {
       let content = try Data(contentsOf: URL(fileURLWithPath: skip))
       let decoder = YAMLDecoder()
-      let functions = try decoder.decode([Skips.Module].self, from: content)
-      return Skips(functions)
+      let model = try decoder.decode(Skips.Model.self, from: content)
+      return Skips(model)
     } catch {
       return Skips.default
     }

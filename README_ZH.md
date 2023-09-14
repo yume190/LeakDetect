@@ -58,36 +58,37 @@ jobs:
 預設路徑位於 `.leakdetect.yml`, 或者可以使用 `--skip list.yml`.
 
 ```yaml
-# objc function `Dispatch.DispatchQueue.main.async {...}`
-- module: Dispatch
-  types:
-  - name: DispatchQueue
-    funcs:
-    - async
-    - asyncAfter
-# static function `UIKit.UIView.UIView.anmiate {...}`
-- module: UIKit.UIView
-  types:
-  - name: UIView
-    staitc:
-    - animate
-# Some Special case
-- module: YOUR_MODULE_NAME
-  types:
-  # global function `func escape(...) {}`
-  - name: ""
-    funcs:
-    - escape
-  # constructor `struct A {...}`
-  # A(...) {}
-  - name: A
-    staitc:
-    - init
-  # Nested Type A.B
-  - name: A.B
-  # Generic Type C<T>.D<U>
-  # ignore generic
-  - name: C.D
+functions:
+  # objc function `Dispatch.DispatchQueue.main.async {...}`
+  - module: Dispatch
+    types:
+    - name: DispatchQueue
+      instance_functions:
+      - async
+      - asyncAfter
+  # static function `UIKit.UIView.UIView.anmiate {...}`
+  - module: UIKit.UIView
+    types:
+    - name: UIView
+      static_functions:
+      - animate
+  # Some Special case
+  - module: YOUR_MODULE_NAME
+    types:
+    # global function `func escape(...) {}`
+    - name: ""
+      instance_functions:
+      - escape
+    # constructor `struct A {...}`
+    # A(...) {}
+    - name: A
+      static_functions:
+      - init
+    # Nested Type A.B
+    - name: A.B
+    # Generic Type C<T>.D<U>
+    # ignore generic
+    - name: C.D
 ```
 
 ### Mode

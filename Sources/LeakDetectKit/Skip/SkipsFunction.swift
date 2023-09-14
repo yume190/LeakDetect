@@ -9,6 +9,11 @@ import Foundation
 import SKClient
 
 public extension Skips {
+  struct Model: Decodable {
+    let functions: [Module]?
+    let types: [String]?
+  }
+  
   struct Module: Decodable {
     let module: String
     let types: [TargetType]?
@@ -16,44 +21,52 @@ public extension Skips {
 
   struct TargetType: Decodable {
     public let name: String
-    public let `static`: [String]?
-    public let funcs: [String]?
-    init(name: String, static: [String]? = nil, funcs: [String]? = nil) {
+    public let static_functions: [String]?
+    public let instance_functions: [String]?
+    init(name: String, static_functions: [String]? = nil, instance_functions: [String]? = nil) {
       self.name = name
-      self.static = `static`
-      self.funcs = funcs
+      self.static_functions = static_functions
+      self.instance_functions = instance_functions
     }
   }
 }
 
 public extension Skips {
-  static let `default`: Skips = .init([
-    Module(
-      module: "Dispatch",
-      types: [
-        TargetType(
-          name: "DispatchQueue",
-          funcs: ["asyncAfter", "async"]
-        )
-      ]
-    ),
+  static let `default`: Skips = .init(
+    Model(
+      functions: [
+        Module(
+          module: "Dispatch",
+          types: [
+            TargetType(
+              name: "DispatchQueue",
+              instance_functions: ["asyncAfter", "async"]
+            )
+          ]
+        ),
     
-    Module(
-      module: "UIKit.UIView",
-      types: [
-        TargetType(
-          name: "UIView",
-          static: ["animate"]
+        Module(
+          module: "UIKit.UIView",
+          types: [
+            TargetType(
+              name: "UIView",
+              static_functions: ["animate"]
+            )
+          ]
         )
-      ]
+      ],
+      types: nil
     )
-  ])
+  )
 }
 
 public final class Skips {
-  public let dict: [String: [String: Skips.TargetType]]
-  public init(_ skips: [Skips.Module]) {
-    let pairs: [(key: String, value: [String: Skips.TargetType])] = skips.map { skip in
+  public let functions: [String: [String: Skips.TargetType]]
+  public let types: [String]
+  
+  public init(_ skips: Skips.Model) {
+    self.types = skips.types ?? []
+    let pairs: [(key: String, value: [String: Skips.TargetType])] = skips.functions?.map { skip in
       let innerPairs: [(key: String, value: Skips.TargetType)] = skip.types?.map { type in
         (type.name, type)
       } ?? []
@@ -61,8 +74,8 @@ public final class Skips {
         l
       })
       return (skip.module, dict)
-    }
-    self.dict = .init(pairs, uniquingKeysWith: { l, _ in
+    } ?? []
+    self.functions = .init(pairs, uniquingKeysWith: { l, _ in
       l
     })
   }
@@ -132,7 +145,7 @@ public final class Skips {
   ///   key.typename -> (DispatchQueue) -> (...) -> ()
   ///   key.name     -> async(group:qos:flags:execute:)
   private final func handleObjectFunc(_ module: String, _ baseType: String, _ functionName: String) -> Bool {
-    return dict[module]?[baseType]?.funcs?.contains(functionName) ?? false
+    return functions[module]?[baseType]?.instance_functions?.contains(functionName) ?? false
   }
   
   /// input
@@ -140,6 +153,6 @@ public final class Skips {
   ///   key.typename -> (UIView.Type) -> (Double, @escaping () -> ()) -> ()
   ///   key.name     -> animate(withDuration:animations:)
   private final func handleStaticFunc(_ module: String, _ baseType: String, _ functionName: String) -> Bool {
-    return dict[module]?[baseType]?.static?.contains(functionName) ?? false
+    return functions[module]?[baseType]?.static_functions?.contains(functionName) ?? false
   }
 }
