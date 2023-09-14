@@ -48,7 +48,7 @@ runs:
       run: |
         # TEMP_DIR=$(mktemp -d)
         curl -sSL \
-          "https://github.com/yume190/LeakDetect/releases/download/0.0.7/leakDetect" \
+          "https://github.com/yume190/LeakDetect/releases/download/0.0.8/leakDetect" \
           -o leakDetect
         chmod +x leakDetect
 

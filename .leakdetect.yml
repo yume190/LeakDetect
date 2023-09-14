@@ -1,5 +1,6 @@
-- module: temp
-  types:
-  - name: ""
-    funcs:
-    - escape
+functions:
+  - module: temp
+    types:
+    - name: ""
+      instance_functions:
+      - escape
