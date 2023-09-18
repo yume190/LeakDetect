@@ -6,8 +6,8 @@
 //
 
 import Foundation
+import SwiftParser
 import SwiftSyntax
-import SwiftSyntaxParser
 
 public enum WeakDetector {
   /// input:
@@ -16,14 +16,10 @@ public enum WeakDetector {
   ///   var c: Int
   public static func detect(code: String) -> Bool {
     let target: String = code
-    do {
-      let source: SourceFileSyntax = try SyntaxParser.parse(source: target)
-      let visitor = WeakVisitor(viewMode: .sourceAccurate)
-      visitor.walk(source)
-      return visitor.isHaveWeak || visitor.isHaveUnowned
-    } catch {
-      return false
-    }
+    let source: SourceFileSyntax = Parser.parse(source: target)
+    let visitor = WeakVisitor(viewMode: .sourceAccurate)
+    visitor.walk(source)
+    return visitor.isHaveWeak || visitor.isHaveUnowned
   }
 }
 

@@ -55,7 +55,7 @@ let package = Package(
                 "Rainbow",
                 "PathKit",
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxParser", package: "swift-syntax"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SKClient", package: "TypeFill"),
             ]
         ),
@@ -66,7 +66,7 @@ let package = Package(
             name: "LeakDetectTests",
             dependencies: [
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxParser", package: "swift-syntax"),
+                .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SKClient", package: "TypeFill"),
                 "LeakDetectKit",
                 "HumanString",

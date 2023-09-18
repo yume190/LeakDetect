@@ -7,7 +7,7 @@
 
 import Foundation
 @testable import LeakDetectKit
-import SwiftSyntaxParser
+import SwiftParser
 import XCTest
 
 final class CaptureListRewriteTests: _LeakTests {
@@ -28,7 +28,7 @@ final class CaptureListRewriteTests: _LeakTests {
       }
     }
     """
-    let root = try SyntaxParser.parse(source: code)
+    let root = Parser.parse(source: code)
 
     let rewriter = CaptureListRewriter()
     let newCode = rewriter.visit(root).description
@@ -53,7 +53,7 @@ final class CaptureListRewriteTests: _LeakTests {
       }
     }
     """
-    let root = try SyntaxParser.parse(source: code)
+    let root = Parser.parse(source: code)
 
     let rewriter = CaptureListRewriter()
     let newCode = rewriter.visit(root).description
@@ -78,7 +78,7 @@ final class CaptureListRewriteTests: _LeakTests {
       }
     }
     """
-    let root = try SyntaxParser.parse(source: code)
+    let root = Parser.parse(source: code)
 
     let rewriter = CaptureListRewriter()
     let newCode = rewriter.visit(root).description
@@ -96,7 +96,7 @@ extension CaptureListRewriteTests {
     }
     """
 
-    let source = try SyntaxParser.parse(source: code)
+    let source = Parser.parse(source: code)
     let rewriter = CaptureListRewriter()
     _ = rewriter.visit(source)
 

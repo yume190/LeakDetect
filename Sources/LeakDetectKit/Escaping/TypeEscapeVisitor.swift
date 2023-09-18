@@ -6,7 +6,6 @@
 
 import Foundation
 import SwiftSyntax
-import SwiftSyntaxParser
 
 /// typealias A = @escaping () -> Void
 /// typealias B = (() -> Void)

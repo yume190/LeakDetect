@@ -9,7 +9,6 @@ import Foundation
 @testable import LeakDetectKit
 @testable import SKClient
 import SwiftSyntax
-import SwiftSyntaxParser
 import XCTest
 
 /// Type: class, struct, enum, protocol, extension(class, struct), ...
@@ -24,7 +23,7 @@ class _LeakTests: XCTestCase {
 
   static func detect(_ code: String, _ sdk: SDK = .macosx) throws -> (Pipeline, [LeakResult]) {
     let path = "code: /temp.swift"
-    let pipeline = try Pipeline(
+    let pipeline = Pipeline(
       path,
       code,
       sdk.args + Self._load + [path]

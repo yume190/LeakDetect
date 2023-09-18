@@ -7,7 +7,7 @@
 
 import Foundation
 import SwiftSyntax
-import SwiftSyntaxParser
+import SwiftParser
 
 public enum EscapingDetector {
     public static func detectWithTypeAlias(code: String) -> Bool {
@@ -17,14 +17,10 @@ public enum EscapingDetector {
 
     public static func detect(code: String) -> Bool {
         let target: String = code
-        do {
-            let source: SourceFileSyntax = try SyntaxParser.parse(source: target)
-            let visitor = TypeEscapeVisitor(viewMode: .sourceAccurate)
-            visitor.walk(source)
-            return visitor.isEscape
-        } catch {
-            return false
-        }
+        let source: SourceFileSyntax = Parser.parse(source: target)
+        let visitor = TypeEscapeVisitor(viewMode: .sourceAccurate)
+        visitor.walk(source)
+        return visitor.isEscape
     }
 
     public static func detect(type: TypeSyntax) -> Bool {
@@ -36,12 +32,10 @@ public enum EscapingDetector {
     private static func _detect(code: String) throws -> FunctionParameterListEscapeVisitor? {
         let target: String = code
 
-        if let source: SourceFileSyntax = try? SyntaxParser.parse(source: target) {
-            let visitor = FunctionParameterListEscapeVisitor(viewMode: .sourceAccurate)
-            visitor.walk(source)
-            return visitor
-        }
-        return nil
+        let source: SourceFileSyntax = Parser.parse(source: target)
+        let visitor = FunctionParameterListEscapeVisitor(viewMode: .sourceAccurate)
+        visitor.walk(source)
+        return visitor
     }
 
     public static func detect(code: String, index: Int) -> Bool {

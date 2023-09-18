@@ -7,7 +7,7 @@
 
 import Foundation
 import SwiftSyntax
-import SwiftSyntaxParser
+import SwiftParser
 
 /// typealias C = (@escaping (@escaping (Int) -> ()) -> (), Int) -> ()
 /// typealias C = (((@escaping (Int) -> ()) -> ()), Int) -> ()
@@ -58,9 +58,8 @@ final class FunctionParameterListEscapeVisitor: SyntaxVisitor {
         }
         let target = "typealias A = \(node.description)"
         
-        if let source = try? SyntaxParser.parse(source: target) {
-            walk(source)
-        }
+        let source = Parser.parse(source: target)
+        walk(source)
         
         return .skipChildren
     }

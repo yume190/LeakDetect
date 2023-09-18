@@ -10,7 +10,7 @@ import PathKit
 import Rainbow
 import SKClient
 import SourceKittenFramework
-import SwiftSyntaxParser
+import SwiftParser
 
 public struct Pipeline {
   public let filePath: String
@@ -23,14 +23,14 @@ public struct Pipeline {
     let path = Path(filePath)
     let code = try path.read(.utf8)
 
-    try self.init(filePath, code, arguments)
+    self.init(filePath, code, arguments)
   }
 
-  public init(_ filePath: String, _ code: String, _ arguments: [String]) throws {
+  public init(_ filePath: String, _ code: String, _ arguments: [String]) {
     self.filePath = filePath
     self.code = code
     self.arguments = arguments
-    (client, rewriter) = try Pipeline.stage1(filePath, self.code, arguments)
+    (client, rewriter) = Pipeline.stage1(filePath, self.code, arguments)
     visitors = Visitors(client, rewriter)
   }
 
@@ -39,8 +39,8 @@ public struct Pipeline {
     _ filePath: String,
     _ code: String,
     _ arguments: [String]
-  ) throws -> (SKClient, CaptureListRewriter) {
-    let source = try SyntaxParser.parse(source: code)
+  ) -> (SKClient, CaptureListRewriter) {
+    let source = Parser.parse(source: code)
     let rewriter = CaptureListRewriter()
     let newSource = rewriter.visit(source)
     let newCode = newSource.description
